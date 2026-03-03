@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FMTO 2.0 — Watchlist</title>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Barlow:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+:root {
+  --bg:     #0d1117;
+  --bg2:    #10161f;
+  --surface:#131b26;
+  --card:   #161e2b;
+  --card2:  #1a2435;
+  --border: #1e2d40;
+  --accent: #4ab3f4;
+  --accent2:#2196d8;
+  --text:   #c9d8e8;
+  --text2:  #516475;
+  --white:  #eaf2fa;
+  --cyan:   #00e5ff;
+  --green:  #4ade80;
+  --yellow: #facc15;
+  --red:    #f87171;
+  --purple: #c084fc;
+}
+
+body { background:var(--bg); color:var(--text); font-family:'Barlow',sans-serif; min-height:100vh; }
+
+/* ===== TOPBAR ===== */
+.topbar { background:var(--bg2); border-bottom:1px solid var(--border); padding:0 1.2rem; height:50px; display:flex; align-items:center; justify-content:space-between; }
+.nav-logo { font-family:'Oswald',sans-serif; font-size:1rem; font-weight:700; color:var(--cyan); letter-spacing:2px; text-shadow:0 0 12px rgba(0,229,255,.35); white-space:nowrap; text-decoration:none; line-height:1.2; }
+.topbar-right { display:flex; gap:.3rem; align-items:center; }
+.topbar-btn { background:none; border:none; color:var(--text2); cursor:pointer; font-family:'Barlow',sans-serif; font-size:.75rem; padding:5px 9px; border-radius:4px; transition:color .2s,background .2s; display:flex; align-items:center; gap:4px; white-space:nowrap; text-decoration:none; }
+.topbar-btn:hover { color:var(--accent); background:rgba(74,179,244,.07); }
+.topbar-btn.watchlist-btn {
+  border:1px solid var(--yellow);
+  border-radius:20px;
+  padding:4px 12px;
+  color:var(--yellow);
+  background:rgba(250,204,21,.06);
+  font-weight:600;
+}
+
+/* ===== PAGE ===== */
+.page-wrap { max-width:900px; margin:0 auto; padding:1.2rem 1.2rem 3rem; }
+
+/* top row: back + title */
+.top-row { display:flex; align-items:center; gap:1rem; margin-bottom:1rem; flex-wrap:wrap; }
+
+.bread-back { background:var(--card); border:1px solid var(--border); color:var(--text2); padding:.32rem .85rem; border-radius:6px; font-size:.78rem; font-family:'Barlow',sans-serif; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:.35rem; transition:all .15s; text-decoration:none; white-space:nowrap; }
+.bread-back:hover { border-color:var(--accent); color:var(--accent); }
+.bread-back svg { width:13px; height:13px; }
+
+.page-title {
+  font-family:'Oswald',sans-serif;
+  font-size:1.3rem;
+  font-weight:700;
+  letter-spacing:2px;
+  color:var(--white);
+  display:flex;
+  align-items:center;
+  gap:.5rem;
+}
+.page-title .star { color:var(--yellow); }
+.page-title .squad-name { color:var(--cyan); }
+
+/* sub-row: count + svuota */
+.sub-row { display:flex; align-items:center; gap:.8rem; margin-bottom:1rem; }
+.player-count { font-size:.82rem; color:var(--text2); }
+
+.btn-svuota {
+  background:var(--card);
+  border:1px solid var(--border);
+  color:var(--text2);
+  padding:.3rem .85rem;
+  border-radius:6px;
+  font-size:.78rem;
+  font-family:'Barlow',sans-serif;
+  font-weight:600;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  gap:.35rem;
+  transition:all .15s;
+}
+.btn-svuota:hover { border-color:var(--red); color:var(--red); }
+
+/* ===== TABLE ===== */
+.table-wrap { overflow-x:auto; border:1px solid var(--border); border-radius:10px; }
+
+table.watch-table { width:100%; border-collapse:collapse; font-size:.83rem; min-width:480px; }
+
+table.watch-table thead tr { background:var(--surface); border-bottom:1px solid var(--border); }
+table.watch-table thead th {
+  padding:.65rem .9rem;
+  text-align:left;
+  font-family:'Oswald',sans-serif;
+  font-size:.68rem;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:var(--text2);
+  font-weight:400;
+  white-space:nowrap;
+}
+table.watch-table thead th:first-child { width:36px; text-align:center; }
+
+table.watch-table tbody tr { border-bottom:1px solid rgba(30,45,64,.7); transition:background .12s; }
+table.watch-table tbody tr:last-child { border-bottom:none; }
+table.watch-table tbody tr:hover { background:rgba(74,179,244,.04); }
+table.watch-table td { padding:.62rem .9rem; vertical-align:middle; }
+table.watch-table td:first-child { text-align:center; }
+
+/* star remove btn */
+.star-btn { background:none; border:none; cursor:pointer; font-size:1rem; color:var(--yellow); transition:transform .15s, color .15s; padding:0; }
+.star-btn:hover { transform:scale(1.2); color:var(--red); }
+
+/* player name */
+.pl-name { font-weight:700; color:var(--white); font-size:.88rem; }
+
+/* squad badge */
+.squad-badge {
+  display:inline-block;
+  background:rgba(0,229,255,.1);
+  border:1px solid rgba(0,229,255,.22);
+  color:var(--cyan);
+  font-family:'Oswald',sans-serif;
+  font-size:.7rem;
+  font-weight:600;
+  letter-spacing:.8px;
+  padding:2px 9px;
+  border-radius:5px;
+  white-space:nowrap;
+}
+
+/* pos badge */
+.pos-badge {
+  display:inline-block;
+  padding:2px 8px;
+  border-radius:4px;
+  font-size:.7rem;
+  font-family:'Oswald',sans-serif;
+  letter-spacing:.8px;
+  background:rgba(74,179,244,.12);
+  color:var(--accent);
+  border:1px solid rgba(74,179,244,.2);
+}
+
+/* age / ca / pa */
+.age-cell { font-size:.83rem; }
+.ca-cell { font-family:'Space Mono',monospace; font-weight:700; font-size:.8rem; }
+.ca-e{color:#4ade80} .ca-h{color:#4ab3f4} .ca-m{color:#facc15} .ca-l{color:#f87171}
+.pa-cell { font-family:'Space Mono',monospace; font-weight:700; font-size:.8rem; color:var(--green); }
+
+/* empty state */
+.empty-state { text-align:center; padding:3rem 1rem; color:var(--text2); }
+.empty-state .ei { font-size:2.2rem; margin-bottom:.7rem; opacity:.4; }
+.empty-state p { font-size:.85rem; }
+
+/* ===== FOOTER ===== */
+footer {
+  border-top:1px solid var(--border);
+  padding:1rem 2rem;
+  text-align:center;
+  color:var(--text2);
+  font-size:.7rem;
+  letter-spacing:1.5px;
+  font-family:'Oswald',sans-serif;
+}
+footer strong { color:var(--cyan); letter-spacing:2px; }
+
+@media(max-width:480px){
+  .topbar-btn .lbl { display:none; }
+  .page-title { font-size:1.05rem; }
+}
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <a href="fmto2.html" class="nav-logo">FMTO<br>2.0</a>
+  <div class="topbar-right">
+    <a href="scouting.html" class="topbar-btn">🔍 <span class="lbl">Scouting</span></a>
+    <a href="mister.html"   class="topbar-btn">👥 <span class="lbl">Mister</span></a>
+    <a href="area-riservata.html" class="topbar-btn">🔒 <span class="lbl">Area Riservata</span></a>
+    <a href="watchlist.html" class="topbar-btn watchlist-btn">★ Watchlist <span id="topCount">( )</span></a>
+  </div>
+</div>
+
+<div class="page-wrap">
+
+  <!-- TOP ROW -->
+  <div class="top-row">
+    <a href="fmto2.html" class="bread-back">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      Indietro
+    </a>
+    <div class="page-title">
+      <span class="star">★</span>
+      WATCHLIST —
+      <span class="squad-name" id="squadName">—</span>
+    </div>
+  </div>
+
+  <!-- SUB ROW -->
+  <div class="sub-row">
+    <span class="player-count" id="playerCount">0 giocatori</span>
+    <button class="btn-svuota" onclick="svuotaWatchlist()">🗑 Svuota</button>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-wrap">
+    <table class="watch-table">
+      <thead>
+        <tr>
+          <th></th>
+          <th>Nome</th>
+          <th>Squadra</th>
+          <th>Pos</th>
+          <th>Età</th>
+          <th>CA</th>
+          <th>PA</th>
+        </tr>
+      </thead>
+      <tbody id="watchBody"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<footer>FMTO 2.0 — Football Manager Tournament Online — © 2025</footer>
+
+<script src="data.js"></script>
+<script>
+/*
+  La watchlist è salvata nel browser (localStorage) come array di ID giocatore.
+  I dati completi vengono letti da data.js al caricamento della pagina.
+*/
+
+const SQUAD_NAME = 'La mia squadra'; // ← cambia con il nome squadra del mister
+
+const SQUAD_LOGO = {};
+SQUADS.forEach(s => { if (s.logo) SQUAD_LOGO[s.name] = s.logo; });
+function logoHtml(squadName) {
+  return SQUAD_LOGO[squadName]
+    ? `<img src="${SQUAD_LOGO[squadName]}" class="logo-badge" alt="" onerror="this.style.display='none'">`
+    : '';
+}
+
+function getWatchlist() {
+  try { return JSON.parse(localStorage.getItem('fmto_watchlist') || '[]'); }
+  catch(e) { return []; }
+}
+
+function setWatchlist(ids) {
+  localStorage.setItem('fmto_watchlist', JSON.stringify(ids));
+}
+
+function caClass(v) {
+  if (v >= 160) return 'ca-e';
+  if (v >= 130) return 'ca-h';
+  if (v >= 100) return 'ca-m';
+  return 'ca-l';
+}
+
+function render() {
+  const ids   = getWatchlist();
+  const wl    = PLAYERS.filter(p => ids.includes(p[0]));
+  const body  = document.getElementById('watchBody');
+  const count = document.getElementById('playerCount');
+  const top   = document.getElementById('topCount');
+
+  document.getElementById('squadName').textContent = SQUAD_NAME;
+  count.textContent = `${wl.length} giocator${wl.length === 1 ? 'e' : 'i'}`;
+  top.textContent   = `${wl.length} )`;
+
+  if (wl.length === 0) {
+    body.innerHTML = `<tr><td colspan="7">
+      <div class="empty-state">
+        <div class="ei">★</div>
+        <p>Nessun giocatore in watchlist.<br>
+        <span style="font-size:.75rem">Aggiungili dalla pagina Scouting con ★</span></p>
+      </div></td></tr>`;
+    return;
+  }
+
+  body.innerHTML = wl.map(p => `
+    <tr>
+      <td><button class="star-btn" title="Rimuovi" onclick="removePlayer(${p[0]})">★</button></td>
+      <td class="pl-name">${p[1]}</td>
+      <td>${logoHtml(p[2])}<span class="squad-badge">${p[2]}</span></td>
+      <td><span class="pos-badge">${p[3]}</span></td>
+      <td class="age-cell">${p[4]}</td>
+      <td class="ca-cell ${caClass(p[5])}">${p[5]}</td>
+      <td class="pa-cell">${p[6]}</td>
+    </tr>`).join('');
+}
+
+function removePlayer(id) {
+  setWatchlist(getWatchlist().filter(x => x !== id));
+  render();
+}
+
+function svuotaWatchlist() {
+  if (getWatchlist().length === 0) return;
+  if (confirm('Svuotare tutta la watchlist?')) {
+    setWatchlist([]);
+    render();
+  }
+}
+
+// Funzione globale per aggiungere dalla pagina Scouting
+window.addToWatchlist = function(playerId) {
+  const ids = getWatchlist();
+  if (!ids.includes(playerId)) {
+    ids.push(playerId);
+    setWatchlist(ids);
+  }
+};
+
+render();
+</script>
+</body>
+</html>
