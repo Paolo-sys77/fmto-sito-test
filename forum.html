@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FMTO 2.0 — Forum</title>
+<link rel="stylesheet" href="style.css">
+<style>
+/* ── UNDER CONSTRUCTION ── */
+.uc-wrap {
+  min-height: calc(100vh - 140px);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.uc-box {
+  text-align:center;
+  padding:2.5rem 2rem;
+  border-radius:16px;
+  background:radial-gradient(circle at top,rgba(139,92,246,.22),rgba(15,23,42,.95));
+  box-shadow:0 18px 45px rgba(15,23,42,.9);
+  border:1px solid rgba(148,163,184,.3);
+}
+.uc-logo {
+  font-family:'Barlow Condensed',sans-serif;
+  font-size:2.4rem;
+  font-weight:800;
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  margin-bottom:.4rem;
+}
+.uc-logo span {
+  background:linear-gradient(135deg,var(--vb),var(--g));
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.uc-sub { font-size:.8rem; color:var(--t3); margin-bottom:1.6rem; text-transform:uppercase; letter-spacing:.18em; }
+.uc-title { font-size:1.4rem; font-weight:700; color:var(--t1); margin-bottom:.5rem; }
+.uc-text { font-size:.9rem; color:var(--t2); max-width:420px; margin:0 auto 1.2rem; }
+.uc-pill {
+  display:inline-flex;
+  align-items:center;
+  gap:.35rem;
+  padding:.35rem .8rem;
+  border-radius:999px;
+  background:rgba(34,197,94,.1);
+  color:#bbf7d0;
+  font-size:.75rem;
+  text-decoration:none;
+}
+.uc-pill:hover{background:rgba(34,197,94,.18);}
+.uc-dot {
+  width:8px;height:8px;border-radius:999px;
+  background:radial-gradient(circle at 30% 30%,#bbf7d0,#22c55e);
+}
+@media(max-width:480px){
+  .uc-box{padding:2rem 1.4rem;}
+  .uc-logo{font-size:2rem;}
+}
+</style>
+</head>
+<body class="gbg">
+
+<nav>
+  <a class="nav-logo" href="home.html">FMTO<span style="background:linear-gradient(135deg,var(--vb),var(--g));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text"> 2.0</span></a>
+  <ul class="nav-links">
+    <li><a href="home.html" id="nav-home">Home</a></li>
+    <li><a href="ranking.html" id="nav-ranking">Ranking</a></li>
+    <li><a href="squadre.html" id="nav-sq">Squadre</a></li>
+    <li><a href="scouting.html" id="nav-scouting">Scouting</a></li>
+    <li><a href="mister.html" id="nav-mister">Mister</a></li>
+    <li><a href="forum.html" id="nav-forum">Forum</a></li>
+    <li><a href="palmares.html" id="nav-palmares">Palmares</a></li>
+    <li><a href="calendario.html" id="nav-calendario">Calendario</a></li>
+    <li><a href="area.html" id="nav-area">Area Riservata</a></li>
+  </ul>
+</nav>
+
+<div class="ticker">
+  <div class="ticker-lbl">Live</div>
+  <div class="ticker-inner"><div class="ticker-track">
+    <span class="ticker-item"><span class="ticker-dot"></span>Turno 8 — Risultati in arrivo venerdì sera</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>56 squadre · 1.394 giocatori reali · FM26</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Top scorer: 14 gol in 8 partite</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Turno 8 — Risultati in arrivo venerdì sera</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>56 squadre · 1.394 giocatori reali · FM26</span>
+  </div></div>
+</div>
+
+<div class="sec">
+  <div class="uc-wrap">
+    <div class="uc-box">
+      <div class="uc-logo">FMTO<span> 2.0</span></div>
+      <div class="uc-sub">Forum</div>
+      <div class="uc-title">Under Construction</div>
+      <p class="uc-text">
+        La nuova sezione forum integrata in FMTO è in costruzione.
+        Per ora puoi continuare a usare il forum ufficiale su FMFusion.
+      </p>
+      <a class="uc-pill" href="https://www.fmfusion.it/Forum-FMTO-Football-Manager-Tournament-Online" target="_blank" rel="noopener">
+        <span class="uc-dot"></span>Apri forum su FMFusion
+      </a>
+    </div>
+  </div>
+</div>
+
+<script src="shared.js"></script>
+</body>
+</html>

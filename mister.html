@@ -4,276 +4,240 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FMTO 2.0 — Mister</title>
-<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Barlow:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
 <style>
-* { margin:0; padding:0; box-sizing:border-box; }
+/* ── MISTER GRID ── */
+.mister-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:1rem; }
 
-:root {
-  --bg:     #0d1117;
-  --bg2:    #10161f;
-  --surface:#131b26;
-  --card:   #161e2b;
-  --card2:  #1a2435;
-  --border: #1e2d40;
-  --accent: #4ab3f4;
-  --accent2:#2196d8;
-  --text:   #c9d8e8;
-  --text2:  #516475;
-  --white:  #eaf2fa;
-  --cyan:   #00e5ff;
-  --green:  #4ade80;
+.mc {
+  background:var(--card); border:1px solid var(--border); border-radius:12px;
+  padding:1.1rem 1.2rem; display:flex; align-items:flex-start; gap:1rem;
+  transition:border-color .18s, transform .18s; cursor:default;
+  text-decoration:none; color:inherit;
+}
+.mc:hover { border-color:var(--v); transform:translateY(-2px); }
+
+.mc-avatar {
+  width:54px; height:54px; border-radius:50%; flex-shrink:0;
+  overflow:hidden; border:2px solid rgba(139,92,246,.25);
+}
+.mc-avatar img { width:100%; height:100%; object-fit:contain; }
+.mc-avatar-placeholder {
+  width:100%; height:100%; display:flex; align-items:center; justify-content:center;
+  font-family:'Barlow Condensed',sans-serif; font-weight:800; font-size:.9rem; color:#fff; border-radius:50%;
 }
 
-body { background:var(--bg); color:var(--text); font-family:'Barlow',sans-serif; min-height:100vh; }
-
-/* ===== TOPBAR ===== */
-.topbar { background:var(--bg2); border-bottom:1px solid var(--border); padding:0 1.2rem; height:50px; display:flex; align-items:center; justify-content:space-between; }
-.nav-logo { font-family:'Oswald',sans-serif; font-size:1.15rem; font-weight:700; color:var(--cyan); letter-spacing:2px; text-shadow:0 0 12px rgba(0,229,255,.35); white-space:nowrap; text-decoration:none; line-height:1.15; }
-.topbar-right { display:flex; gap:.3rem; align-items:center; flex-wrap:wrap; }
-.topbar-btn { background:none; border:none; color:var(--text2); cursor:pointer; font-family:'Barlow',sans-serif; font-size:.75rem; padding:5px 10px; border-radius:4px; transition:color .2s,background .2s; display:flex; align-items:center; gap:4px; white-space:nowrap; text-decoration:none; }
-.topbar-btn:hover { color:var(--accent); background:rgba(74,179,244,.07); }
-.topbar-btn.active { color:var(--cyan); }
-.topbar-btn.watchlist { border:1px solid var(--border); border-radius:20px; padding:4px 12px; }
-.topbar-btn .badge { font-size:.68rem; }
-
-/* ===== PAGE ===== */
-.page-wrap { max-width:1200px; margin:0 auto; padding:1.2rem 1.2rem 3rem; }
-
-/* breadcrumb */
-.breadcrumb { display:flex; align-items:center; gap:.5rem; margin-bottom:1.2rem; }
-.bread-back { background:var(--card); border:1px solid var(--border); color:var(--text2); padding:.3rem .8rem; border-radius:6px; font-size:.76rem; font-family:'Barlow',sans-serif; font-weight:600; cursor:pointer; display:inline-flex; align-items:center; gap:.35rem; transition:all .15s; text-decoration:none; }
-.bread-back:hover { border-color:var(--accent); color:var(--accent); }
-.bread-back svg { width:13px; height:13px; }
-.bread-sep { color:var(--text2); font-size:.78rem; }
-.bread-current { font-size:.78rem; color:var(--cyan); font-weight:600; }
-
-/* page header */
-.page-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem; flex-wrap:wrap; gap:.5rem; }
-.page-title { font-family:'Oswald',sans-serif; font-size:1.3rem; font-weight:700; letter-spacing:2px; color:var(--white); display:flex; align-items:center; gap:.5rem; }
-.mister-count { font-size:.82rem; color:var(--text2); }
-
-/* search */
-.search-wrap { margin-bottom:1rem; }
-.search-input {
-  width:100%; max-width:360px;
-  background:var(--card);
-  border:1px solid var(--border);
-  color:var(--text);
-  padding:.65rem 1rem;
-  border-radius:10px;
-  font-family:'Barlow',sans-serif;
-  font-size:.85rem;
-  outline:none;
-  transition:border-color .2s;
-}
-.search-input::placeholder { color:var(--text2); }
-.search-input:focus { border-color:var(--accent); }
-
-/* ===== TABLE ===== */
-.table-wrap { overflow-x:auto; border:1px solid var(--border); border-radius:10px; }
-
-table.mister-table { width:100%; border-collapse:collapse; font-size:.83rem; min-width:680px; }
-
-table.mister-table thead tr {
-  background:var(--surface);
-  border-bottom:1px solid var(--border);
-}
-table.mister-table thead th {
-  padding:.7rem 1rem;
-  text-align:left;
-  font-family:'Oswald',sans-serif;
-  font-size:.68rem;
-  letter-spacing:2px;
-  text-transform:uppercase;
-  color:var(--text2);
-  font-weight:400;
-  white-space:nowrap;
+.mc-body { flex:1; min-width:0; }
+.mc-name { font-size:.95rem; font-weight:700; color:#e8eaf0; line-height:1.2; }
+.mc-squad {
+  font-family:'Barlow Condensed',sans-serif; font-size:.72rem; font-weight:700;
+  letter-spacing:.08em; text-transform:uppercase; margin-top:.18rem; margin-bottom:.55rem;
 }
 
-table.mister-table tbody tr {
-  border-bottom:1px solid rgba(30,45,64,.7);
-  transition:background .12s;
-  cursor:default;
+.mc-rows { display:flex; flex-direction:column; gap:.28rem; }
+.mc-row { display:flex; align-items:center; gap:.5rem; font-size:.75rem; color:#9ca3af; }
+.mc-row svg { flex-shrink:0; opacity:.55; }
+.mc-row a { color:#c4b5fd; text-decoration:none; }
+.mc-row a:hover { color:#a78bfa; text-decoration:underline; }
+.mc-badge {
+  display:inline-flex; align-items:center; gap:.25rem;
+  padding:.1rem .45rem; border-radius:99px; font-size:.65rem; font-weight:700;
+  background:rgba(139,92,246,.1); border:1px solid rgba(139,92,246,.2); color:#c4b5fd;
 }
-table.mister-table tbody tr:last-child { border-bottom:none; }
-table.mister-table tbody tr:hover { background:rgba(74,179,244,.04); }
-table.mister-table td { padding:.65rem 1rem; vertical-align:middle; }
+.mc-badge.green { background:rgba(34,211,160,.08); border-color:rgba(34,211,160,.2); color:#22d3a0; }
 
-/* squad badge */
-.squad-badge {
-  display:inline-block;
-  background:rgba(0,229,255,.12);
-  border:1px solid rgba(0,229,255,.25);
-  color:var(--cyan);
-  font-family:'Oswald',sans-serif;
-  font-size:.72rem;
-  font-weight:600;
-  letter-spacing:1px;
-  padding:3px 10px;
-  border-radius:5px;
-  white-space:nowrap;
+/* empty slot */
+.mc.empty { opacity:.35; pointer-events:none; }
+.mc.empty .mc-name { color:#4b5563; font-style:italic; }
+
+/* search + toggle */
+.view-toggle { display:flex; gap:.4rem; }
+.vt-btn {
+  background:var(--card); border:1px solid var(--border); color:var(--t2);
+  font-family:'Barlow Condensed',sans-serif; font-size:.72rem; font-weight:600;
+  letter-spacing:.1em; text-transform:uppercase; padding:.35rem .8rem;
+  border-radius:6px; cursor:pointer; transition:all .14s;
 }
+.vt-btn:hover,.vt-btn.active { border-color:var(--v); color:var(--vb); background:rgba(139,92,246,.09); }
 
-/* mister name */
-.mister-name { font-weight:700; color:var(--white); font-size:.88rem; }
-
-/* telegram link */
-.tg-link { color:var(--cyan); text-decoration:none; font-weight:500; font-size:.83rem; }
-.tg-link:hover { text-decoration:underline; }
-
-/* forum */
-.forum-cell { color:var(--text2); font-size:.8rem; }
-
-/* ingresso */
-.ingresso-cell { font-family:'Space Mono',monospace; font-size:.78rem; color:var(--green); }
-
-/* ultimo cambio */
-.cambio-cell { color:var(--text2); font-size:.8rem; }
-
-/* empty / no results */
-.logo-badge { width:20px; height:20px; object-fit:contain; vertical-align:middle; margin-right:5px; filter:drop-shadow(0 1px 3px rgba(0,0,0,.4)); }
-.no-results { text-align:center; padding:2.5rem; color:var(--text2); font-size:.85rem; }
-
-/* ===== FOOTER ===== */
-footer { border-top:1px solid var(--border); background:var(--bg2); padding:1rem 2rem; text-align:center; color:var(--text2); font-size:.68rem; letter-spacing:2px; text-transform:uppercase; font-family:'Oswald',sans-serif; }
-
-@media(max-width:600px){
-  .topbar-btn .lbl { display:none; }
-  .search-input { max-width:100%; }
+/* table */
+.mister-tbl { width:100%; border-collapse:collapse; }
+.mister-tbl th {
+  font-family:'Barlow Condensed',sans-serif; font-size:.66rem; font-weight:600;
+  letter-spacing:.13em; text-transform:uppercase; color:var(--t2); text-align:left;
+  padding:.58rem .95rem; border-bottom:1px solid var(--border); white-space:nowrap;
 }
+.mister-tbl td { padding:.62rem .95rem; font-size:.82rem; border-bottom:1px solid rgba(139,92,246,.05); vertical-align:middle; }
+.mister-tbl tr:hover td { background:rgba(139,92,246,.05); }
+.mister-tbl tr:last-child td { border-bottom:none; }
+.mister-tbl a { color:#c4b5fd; text-decoration:none; }
+.mister-tbl a:hover { text-decoration:underline; }
+
+@media(max-width:480px){ .mister-grid { grid-template-columns:1fr; } }
 </style>
 </head>
-<body>
+<body class="gbg">
 
-<!-- TOPBAR -->
-<div class="topbar">
-  <a href="fmto2.html" class="nav-logo">FMTO 2.0</a>
-  <div class="topbar-right">
-    <a href="scouting.html"       class="topbar-btn">🔍 <span class="lbl">Scouting</span></a>
-    <a href="mister.html"         class="topbar-btn active">👥 <span class="lbl">Mister</span></a>
-    <a href="area-riservata.html" class="topbar-btn">🔒 <span class="lbl">Area Riservata</span></a>
-    <a href="watchlist.html"      class="topbar-btn watchlist">★ Watchlist ( )</a>
-  </div>
+<nav>
+  <a class="nav-logo" href="home.html">FMTO<span style="background:linear-gradient(135deg,var(--vb),var(--g));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text"> 2.0</span></a>
+  <ul class="nav-links">
+    <li><a href="home.html" id="nav-home">Home</a></li>
+    <li><a href="ranking.html" id="nav-ranking">Ranking</a></li>
+    <li><a href="squadre.html" id="nav-sq">Squadre</a></li>
+    <li><a href="scouting.html" id="nav-scouting">Scouting</a></li>
+    <li><a href="mister.html" id="nav-mister">Mister</a></li>
+    <li><a href="forum.html" id="nav-forum">Forum</a></li>
+    <li><a href="palmares.html" id="nav-palmares">Palmares</a></li>
+    <li><a href="calendario.html" id="nav-calendario">Calendario</a></li>
+    <li><a href="area.html" id="nav-area">Area Riservata</a></li>
+  </ul>
+</nav>
+
+<div class="ticker">
+  <div class="ticker-lbl">Live</div>
+  <div class="ticker-inner"><div class="ticker-track">
+    <span class="ticker-item"><span class="ticker-dot"></span>Turno 8 — Risultati in arrivo venerdì sera</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Top scorer: 14 gol in 8 partite</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>56 squadre · 1.394 giocatori reali · FM26</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Turno 8 — Risultati in arrivo venerdì sera</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>Top scorer: 14 gol in 8 partite</span>
+    <span class="ticker-item"><span class="ticker-dot"></span>56 squadre · 1.394 giocatori reali · FM26</span>
+  </div></div>
 </div>
 
-<div class="page-wrap">
-
-  <!-- BREADCRUMB -->
-  <div class="breadcrumb">
-    <a href="fmto2.html" class="bread-back">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-      Home
-    </a>
-    <span class="bread-sep">/</span>
-    <span class="bread-current">Mister</span>
+<div class="sec">
+  <div style="margin-bottom:1.8rem">
+    <div class="sec-tag">Torneo</div>
+    <h2 class="sec-title">I <span>Mister</span></h2>
+    <p style="margin-top:.35rem;font-size:.82rem;color:var(--t2)">Tutti gli allenatori del torneo FMTO 2.0 — stagione 2025/26</p>
   </div>
 
-  <!-- HEADER -->
-  <div class="page-header">
-    <div class="page-title">👥 RIEPILOGO MISTER</div>
-    <div class="mister-count" id="misterCount">56 mister</div>
+  <div style="display:flex;gap:1rem;flex-wrap:wrap;align-items:flex-end;margin-bottom:1.4rem">
+    <div class="search-wrap" style="margin-bottom:0;flex:1;min-width:200px;max-width:380px">
+      <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" class="search-input" id="m-search" placeholder="Cerca mister o squadra..." oninput="filterMister()" autocomplete="off">
+    </div>
+    <div class="view-toggle">
+      <button class="vt-btn active" onclick="setView('cards',this)">⊞ Card</button>
+      <button class="vt-btn" onclick="setView('table',this)">☰ Tabella</button>
+    </div>
   </div>
 
-  <!-- SEARCH -->
-  <div class="search-wrap">
-    <input
-      class="search-input"
-      type="text"
-      id="searchInput"
-      placeholder="Cerca per squadra, nome, telegram..."
-      oninput="filterTable()"
-    >
-  </div>
-
-  <!-- TABLE -->
-  <div class="table-wrap">
-    <table class="mister-table">
-      <thead>
-        <tr>
-          <th>Squadra</th>
-          <th>Mister</th>
-          <th>Telegram</th>
-          <th>Forum</th>
-          <th>Ingresso FMTO</th>
-          <th>Ultimo Cambio Club</th>
-        </tr>
-      </thead>
-      <tbody id="misterBody"></tbody>
+  <div id="mister-cards" class="mister-grid"></div>
+  <div id="mister-table" style="display:none;overflow-x:auto">
+    <table class="mister-tbl">
+      <thead><tr>
+        <th>#</th><th>Squadra</th><th>Mister</th><th>Telegram</th>
+        <th>Forum</th><th>Nel torneo</th><th>Ultimo cambio</th>
+      </tr></thead>
+      <tbody id="mister-tbody"></tbody>
     </table>
   </div>
-
 </div>
 
-<footer>FMTO 2.0 — Football Manager Tournament Online — © 2025</footer>
-
 <script src="data.js"></script>
+<script src="players.js"></script>
+<script src="misters-data.js"></script>
+<script src="shared.js"></script>
 <script>
-/*
-  MISTERS — dati anagrafici (compilare manualmente).
-  Le statistiche CA/PA/età vengono prese automaticamente da data.js.
-*/
-const MISTERS = [
-  { squad:"AFC Ajax",    name:"Alessandro", telegram:"@alessandromicciullo", forum:"ucavadd",    joinDate:"01/06/2020", lastClub:"—" },
-  { squad:"Anderlecht",  name:"Alfredo",    telegram:"@Fred994",             forum:"Dieguito94", joinDate:"01/05/2021", lastClub:"—" },
-  /* ← inserire qui tutti gli altri 54 mister */
-];
+let currentView = 'cards';
 
-const squadStats = {};
-const squadLogos = {};
-SQUADS.forEach(s => {
-  squadStats[s.name] = s;
-  if (s.logo) squadLogos[s.name] = s.logo;
-});
-function logoHtml(squadName) {
-  return squadLogos[squadName]
-    ? `<img src="${squadLogos[squadName]}" class="logo-badge" alt="" onerror="this.style.display='none'">`
-    : '';
+function tgLink(handle) {
+  if (!handle || handle.includes(' ')) return handle || '—';
+  const clean = handle.replace(/^@/, '');
+  return `<a href="https://t.me/${clean}" target="_blank" rel="noopener">@${clean}</a>`;
 }
 
+function buildMisterCards() {
+  const grid = document.getElementById('mister-cards');
+  grid.innerHTML = SQUADS.map(sq => {
+    const m = getMisterInfo(sq.name);
+    const hasInfo = !!m.nome;
+    const players = PLAYERS_BY_TEAM[sq.name] || [];
+    const avgCA = players.length ? Math.round(players.reduce((s,p) => s+p.ca, 0) / players.length) : 0;
+    const topCA = players.length ? Math.max(...players.map(p=>p.ca)) : 0;
 
-function enrichMister(m) {
-  const s = squadStats[m.squad] || {};
-  return { ...m, avgCA: s.avgCA||'—', avgPA: s.avgPA||'—', avgAge: s.avgAge||'—', u23: s.u23||'—', count: s.count||'—' };
+    const logoInner = sq.logo
+      ? `<img src="${sq.logo}" alt="${sq.name}" style="width:100%;height:100%;object-fit:contain;padding:3px${sq.name==='JUVENTUS'?';background:#111;border-radius:50%':''}">`
+      : `<div class="mc-avatar-placeholder" style="background:linear-gradient(135deg,${sq.color1},${sq.color2})">${sq.name.split(' ').map(w=>w[0]).join('').slice(0,3)}</div>`;
+
+    const tgLinkHtml = m.telegram && !m.telegram.includes(' ')
+      ? `<a href="https://t.me/${m.telegram.replace(/^@/,'')}" target="_blank" rel="noopener">@${m.telegram.replace(/^@/,'')}</a>`
+      : (m.telegram || '—');
+
+    return `<div class="mc${hasInfo?'':' empty'}" data-search="${(m.nome+' '+sq.name).toLowerCase()}">
+      <div class="mc-avatar">${logoInner}</div>
+      <div class="mc-body">
+        <div class="mc-name">${hasInfo ? m.nome : 'Nessun mister'}</div>
+        <div class="mc-squad" style="color:${sq.color1}">${sq.name}</div>
+        <div class="mc-rows">
+          ${m.telegram ? `<div class="mc-row">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            ${tgLinkHtml}
+          </div>` : ''}
+          ${m.forum ? `<div class="mc-row">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <span>${m.forum}</span>
+          </div>` : ''}
+          <div class="mc-row" style="margin-top:.3rem;gap:.35rem;flex-wrap:wrap">
+            ${avgCA ? `<span class="mc-badge">CA medio ${avgCA}</span>` : ''}
+            ${topCA ? `<span class="mc-badge">Top CA ${topCA}</span>` : ''}
+            ${m.ingresso ? `<span class="mc-badge green">Dal ${m.ingresso}</span>` : ''}
+            ${m.ultimo_cambio ? `<span class="mc-badge" style="background:rgba(251,191,36,.07);border-color:rgba(251,191,36,.2);color:#fbbf24">Cambio ${m.ultimo_cambio}</span>` : ''}
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
 }
 
-let filtered = MISTERS.map(enrichMister);
+function buildMisterTable() {
+  const tbody = document.getElementById('mister-tbody');
+  tbody.innerHTML = SQUADS.map((sq, i) => {
+    const m = getMisterInfo(sq.name);
+    const logoEl = sq.logo
+      ? `<img src="${sq.logo}" alt="${sq.name}" style="width:24px;height:24px;object-fit:contain;vertical-align:middle;margin-right:.5rem${sq.name==='JUVENTUS'?';background:#111;border-radius:50%;padding:2px':''}">`
+      : '';
+    return `<tr>
+      <td style="color:var(--t4);font-size:.72rem">${i+1}</td>
+      <td>${logoEl}<span style="font-weight:600">${sq.name}</span></td>
+      <td style="font-weight:600;color:#e8eaf0">${m.nome || '<span style="color:#4b5563;font-style:italic">—</span>'}</td>
+      <td>${m.telegram && !m.telegram.includes(' ')
+        ? `<a href="https://t.me/${m.telegram.replace(/^@/,'')}" target="_blank">@${m.telegram.replace(/^@/,'')}</a>`
+        : (m.telegram||'—')}</td>
+      <td style="color:var(--t2)">${m.forum||'—'}</td>
+      <td><span class="mc-badge green" style="font-size:.62rem">${m.ingresso||'—'}</span></td>
+      <td style="color:var(--t2);font-size:.75rem">${m.ultimo_cambio||'—'}</td>
+    </tr>`;
+  }).join('');
+}
 
-function renderTable(data) {
-  const body  = document.getElementById('misterBody');
-  const count = document.getElementById('misterCount');
-  count.textContent = `${data.length} mister`;
-
-  if (data.length === 0) {
-    body.innerHTML = `<tr><td colspan="6"><div class="no-results">Nessun risultato trovato.</div></td></tr>`;
-    return;
+function filterMister() {
+  const q = document.getElementById('m-search').value.toLowerCase().trim();
+  if (currentView === 'cards') {
+    document.querySelectorAll('.mc').forEach(c =>
+      c.style.display = (!q || c.dataset.search.includes(q)) ? '' : 'none'
+    );
+  } else {
+    document.querySelectorAll('.mister-tbl tbody tr').forEach((tr, i) => {
+      const sq = SQUADS[i];
+      const m = getMisterInfo(sq.name);
+      const match = `${m.nome} ${sq.name}`.toLowerCase().includes(q);
+      tr.style.display = (!q || match) ? '' : 'none';
+    });
   }
-
-  body.innerHTML = data.map(m => `
-    <tr>
-      <td>${logoHtml(m.squad)}<span class="squad-badge">${m.squad}</span></td>
-      <td class="mister-name">${m.name}</td>
-      <td>${m.telegram
-        ? `<a class="tg-link" href="https://t.me/${m.telegram.replace('@','')}" target="_blank">${m.telegram}</a>`
-        : '<span style="color:var(--text2)">—</span>'}</td>
-      <td class="forum-cell">${m.forum || '—'}</td>
-      <td class="ingresso-cell">${m.joinDate || '—'}</td>
-      <td class="cambio-cell">${m.lastClub || '—'}</td>
-    </tr>`).join('');
 }
 
-function filterTable() {
-  const q = document.getElementById('searchInput').value.toLowerCase().trim();
-  const base = MISTERS.map(enrichMister);
-  filtered = q ? base.filter(m =>
-    (m.squad    ||'').toLowerCase().includes(q) ||
-    (m.name     ||'').toLowerCase().includes(q) ||
-    (m.telegram ||'').toLowerCase().includes(q) ||
-    (m.forum    ||'').toLowerCase().includes(q)
-  ) : base;
-  renderTable(filtered);
+function setView(v, btn) {
+  currentView = v;
+  document.querySelectorAll('.vt-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('mister-cards').style.display = v === 'cards' ? '' : 'none';
+  document.getElementById('mister-table').style.display  = v === 'table' ? '' : 'none';
 }
 
-renderTable(filtered);
+buildMisterCards();
+buildMisterTable();
 </script>
 </body>
 </html>

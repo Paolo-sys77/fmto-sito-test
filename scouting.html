@@ -1,609 +1,792 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FMTO 2.0 — Scouting</title>
-<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Barlow:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-<style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-
-:root {
-  --bg:      #0d1117;
-  --bg2:     #10161f;
-  --surface: #131b26;
-  --card:    #161e2b;
-  --border:  #1c2a3a;
-  --accent:  #4ab3f4;
-  --accent2: #2196d8;
-  --text:    #c9d8e8;
-  --text2:   #516475;
-  --white:   #eaf2fa;
-  --green:   #29d984;
-  --yellow:  #f5c842;
-  --red:     #f45a5a;
-}
-
-body { background: var(--bg); color: var(--text); font-family: 'Barlow', sans-serif; min-height: 100vh; overflow-x: hidden; }
-
-/* ===== TOPBAR ===== */
-.topbar { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 0 1.5rem; height: 46px; display: flex; align-items: center; justify-content: space-between; }
-.topbar-left { font-family: 'Oswald', sans-serif; letter-spacing: 1px; color: var(--text2); font-size: .7rem; }
-.topbar-right { display: flex; gap: .5rem; }
-.topbar-btn { background: none; border: none; color: var(--text2); cursor: pointer; font-family: 'Barlow', sans-serif; font-size: .75rem; padding: 4px 10px; border-radius: 3px; transition: color .2s, background .2s; display: flex; align-items: center; gap: 5px; }
-.topbar-btn:hover { color: var(--accent); background: rgba(74,179,244,.07); }
-.topbar-btn .badge { background: var(--accent); color: #0d1117; font-size: .62rem; font-weight: 700; padding: 1px 5px; border-radius: 10px; }
-
-/* ===== MAIN NAV ===== */
-.main-nav { background: var(--bg2); border-bottom: 2px solid var(--accent2); position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 20px rgba(0,0,0,.4); }
-.nav-inner { max-width: 1400px; margin: 0 auto; padding: 0 1.5rem; display: flex; align-items: center; height: 50px; }
-.nav-logo { font-family: 'Oswald', sans-serif; font-size: 1.2rem; font-weight: 700; color: var(--accent); letter-spacing: 2px; margin-right: 2rem; text-shadow: 0 0 14px rgba(74,179,244,.35); white-space: nowrap; text-decoration: none; }
-.nav-links { display: flex; }
-.nav-link { color: var(--text2); text-decoration: none; font-weight: 600; font-size: .76rem; letter-spacing: 1.5px; text-transform: uppercase; padding: 0 1rem; height: 50px; display: flex; align-items: center; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: color .2s, border-color .2s, background .2s; gap: 5px; }
-.nav-link:hover { color: var(--accent); border-bottom-color: var(--accent); background: rgba(74,179,244,.05); }
-.nav-link.active { color: var(--accent); border-bottom-color: var(--accent); }
-
-/* ===== SCOUTING VIEW ===== */
-#scoutingView { max-width: 1400px; margin: 0 auto; padding: 1.5rem 1.5rem 3rem; }
-
-/* ===== HEADER ===== */
-.scouting-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: .8rem;
-  flex-wrap: wrap;
-  gap: .5rem;
-}
-
-.page-back-btn {
-  background: var(--card);
-  border: 1px solid var(--border);
-  color: var(--text2);
-  padding: .38rem .85rem;
-  border-radius: 6px;
-  font-size: .78rem;
-  font-family: 'Barlow', sans-serif;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: .4rem;
-  transition: all .15s;
-  text-decoration: none;
-}
-.page-back-btn:hover { border-color: var(--accent); color: var(--accent); }
-.page-back-btn svg { width: 14px; height: 14px; }
-
-.scouting-title {
-  font-family: 'Oswald', sans-serif;
-  font-size: 1.2rem;
-  letter-spacing: 2px;
-  color: var(--white);
-  text-transform: uppercase;
-}
-
-/* ===== FILTER PANEL ===== */
-.scout-filters {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: .5rem;
-  margin-bottom: 1rem;
-  padding: 1rem;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-}
-
-.scout-filter-cat {
-  grid-column: 1 / -1;
-  font-family: 'Oswald', sans-serif;
-  font-size: .85rem;
-  letter-spacing: 1px;
-  color: var(--accent);
-  padding: .3rem 0;
-  border-bottom: 1px solid var(--border);
-  margin-top: .3rem;
-}
-.scout-filter-cat:first-child { margin-top: 0; }
-
-.scout-filter-row {
-  display: flex;
-  align-items: center;
-  gap: .4rem;
-  font-size: .78rem;
-  color: var(--text2);
-}
-
-.scout-filter-label {
-  font-size: .72rem;
-  color: var(--text2);
-  width: 105px;
-  flex-shrink: 0;
-}
-
-.scout-filter-input {
-  width: 50px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  color: var(--text);
-  padding: .3rem .4rem;
-  border-radius: 4px;
-  font-size: .78rem;
-  font-family: 'Space Mono', monospace;
-  text-align: center;
-  outline: none;
-  transition: border-color .2s;
-  -moz-appearance: textfield;
-}
-.scout-filter-input::-webkit-outer-spin-button,
-.scout-filter-input::-webkit-inner-spin-button { -webkit-appearance: none; }
-.scout-filter-input:focus { border-color: var(--accent); }
-
-/* ===== ACTIONS ===== */
-.scout-actions {
-  display: flex;
-  gap: .6rem;
-  margin-bottom: 1rem;
-  flex-wrap: wrap;
-  align-items: center;
-}
-
-.scout-btn {
-  background: var(--card);
-  border: 1px solid var(--border);
-  color: var(--text);
-  padding: .5rem 1rem;
-  border-radius: 8px;
-  font-size: .82rem;
-  cursor: pointer;
-  font-family: 'Barlow', sans-serif;
-  font-weight: 500;
-  transition: all .15s;
-}
-.scout-btn:hover { border-color: var(--accent); color: var(--accent); }
-
-.scout-btn-primary {
-  background: linear-gradient(135deg, var(--accent), rgba(0,184,255,.6));
-  color: var(--bg);
-  border: none;
-  font-weight: 700;
-}
-.scout-btn-primary:hover { box-shadow: 0 0 15px rgba(0,240,255,.3); transform: scale(1.02); color: var(--bg); }
-
-.filter-select {
-  background: var(--card);
-  border: 1px solid var(--border);
-  color: var(--text);
-  padding: .45rem .6rem;
-  border-radius: 8px;
-  font-family: 'Barlow', sans-serif;
-  font-size: .82rem;
-  outline: none;
-  cursor: pointer;
-  transition: border-color .2s;
-}
-.filter-select:focus { border-color: var(--accent); }
-
-/* ===== RESULTS INFO ===== */
-.scout-results-info {
-  color: var(--text2);
-  font-size: .82rem;
-  margin-bottom: .5rem;
-  min-height: 1.2rem;
-}
-
-/* ===== TABLE ===== */
-.table-wrap {
-  overflow-x: auto;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-}
-
-table#scoutTable {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: .82rem;
-  min-width: 600px;
-}
-
-table#scoutTable thead tr {
-  background: var(--surface);
-  border-bottom: 2px solid var(--accent2);
-}
-
-table#scoutTable thead th {
-  padding: .6rem .9rem;
-  text-align: left;
-  font-family: 'Oswald', sans-serif;
-  font-size: .7rem;
-  letter-spacing: 1.5px;
-  text-transform: uppercase;
-  color: var(--text2);
-  white-space: nowrap;
-  cursor: pointer;
-  user-select: none;
-  transition: color .15s;
-}
-table#scoutTable thead th:hover { color: var(--accent); }
-
-table#scoutTable tbody tr {
-  border-bottom: 1px solid var(--border);
-  transition: background .12s;
-  cursor: pointer;
-}
-table#scoutTable tbody tr:last-child { border-bottom: none; }
-table#scoutTable tbody tr:hover { background: rgba(74,179,244,.05); }
-
-table#scoutTable td {
-  padding: .58rem .9rem;
-  vertical-align: middle;
-}
-
-/* player name cell */
-.player-name-cell { font-weight: 700; color: var(--white); font-size: .85rem; }
-
-/* squad cell */
-.squad-cell { font-size: .78rem; color: var(--text2); }
-
-/* position badge */
-.pos-badge {
-  display: inline-block;
-  padding: 2px 7px;
-  border-radius: 3px;
-  font-size: .68rem;
-  font-family: 'Oswald', sans-serif;
-  letter-spacing: .8px;
-  background: rgba(74,179,244,.12);
-  color: var(--accent);
-  border: 1px solid rgba(74,179,244,.2);
-}
-
-/* age */
-.age-cell { font-family: 'Space Mono', monospace; font-size: .78rem; }
-
-/* CA / PA */
-.ca-cell {
-  font-family: 'Space Mono', monospace;
-  font-size: .82rem;
-  font-weight: 700;
-}
-
-/* nationality */
-.nat-cell { font-size: .75rem; color: var(--text2); }
-
-/* CA color scale */
-.ca-elite  { color: #29d984; }
-.ca-high   { color: #4ab3f4; }
-.ca-mid    { color: #f5c842; }
-.ca-low    { color: #f45a5a; }
-
-/* PA color scale */
-.pa-hi  { color: #29d984; }
-.pa-mid { color: #f5c842; }
-.pa-lo  { color: var(--text2); }
-
-/* ===== EMPTY / NO RESULTS ===== */
-.scout-empty {
-  text-align: center;
-  padding: 3.5rem 2rem;
-  color: var(--text2);
-}
-.scout-empty .ei { font-size: 2.5rem; margin-bottom: .8rem; opacity: .4; }
-.scout-empty p { font-size: .88rem; }
-
-/* logo badge nelle tabelle */
-.logo-badge { width:18px; height:18px; object-fit:contain; vertical-align:middle; margin-right:4px; filter:drop-shadow(0 1px 3px rgba(0,0,0,.4)); }
-/* bottone watchlist nella tabella risultati */
-.wl-btn { background:none; border:none; cursor:pointer; font-size:1rem; color:var(--yellow); padding:0; transition:transform .15s; }
-.wl-btn:hover { transform:scale(1.2); }
-
-/* ===== FOOTER ===== */
-footer { border-top: 1px solid var(--border); background: var(--bg2); padding: 1.2rem 2rem; text-align: center; color: var(--text2); font-size: .7rem; letter-spacing: 2px; text-transform: uppercase; font-family: 'Oswald', sans-serif; }
-
-/* ===== RESPONSIVE ===== */
-@media (max-width: 768px) {
-  .topbar-left { display: none; }
-  .nav-link .lbl { display: none; }
-  .nav-link { padding: 0 .7rem; }
-  .scout-filters { grid-template-columns: 1fr 1fr; }
-}
-@media (max-width: 480px) {
-  .scout-filters { grid-template-columns: 1fr; }
-  .scout-actions { flex-direction: column; align-items: stretch; }
-  .scout-actions .filter-select { width: 100%; }
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FMTO 2.0 — Scouting</title>
+  <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="gbg scout-page-fm26">
 
-<!-- TOP BAR -->
-<div class="topbar">
-  <div class="topbar-left">FMTO 2.0 — Football Manager Tournament Online — © 2025</div>
-  <div class="topbar-right">
-    <a href="scouting.html"       class="topbar-btn">🔍 <span>Scouting</span></a>
-    <a href="mister.html"         class="topbar-btn">👥 <span>Mister</span></a>
-    <a href="area-riservata.html" class="topbar-btn">🔒 <span>Area Riservata</span></a>
-    <a href="watchlist.html"      class="topbar-btn">★ Watchlist <span class="badge" id="watchCount">0</span></a>
-    <button class="topbar-btn">⚔ Confronta <span class="badge">0</span></button>
-  </div>
-</div>
-
-<!-- MAIN NAV -->
-<nav class="main-nav">
-  <div class="nav-inner">
-    <a href="fmto2.html" class="nav-logo">FMTO 2.0</a>
-    <div class="nav-links">
-      <a href="fmto2.html" class="nav-link">🏠 <span class="lbl">Home</span></a>
-      <a href="#" class="nav-link">🏆 <span class="lbl">Classifica</span></a>
-      <a href="#" class="nav-link">📊 <span class="lbl">Statistiche</span></a>
-      <a href="scouting.html" class="nav-link active">🔍 <span class="lbl">Scouting</span></a>
-      <a href="mister.html"   class="nav-link">👥 <span class="lbl">Mister</span></a>
-    </div>
-  </div>
+  <!-- NAV -->
+  <nav>
+    <a class="nav-logo" href="home.html">FMTO<span style="background:linear-gradient(135deg,var(--vb),var(--g));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text"> 2.0</span></a>
+    <ul class="nav-links">
+    <li><a href="home.html" id="nav-home">Home</a></li>
+    <li><a href="ranking.html" id="nav-ranking">Ranking</a></li>
+<li><a href="squadre.html" id="nav-sq">Squadre</a></li>
+    <li><a href="scouting.html" id="nav-scouting">Scouting</a></li>
+    <li><a href="mister.html" id="nav-mister">Mister</a></li>
+      <li><a href="forum.html" id="nav-forum">Forum</a></li>
+<li><a href="palmares.html" id="nav-palmares">Palmares</a></li>
+    <li><a href="calendario.html" id="nav-calendario">Calendario</a></li>
+    <li><a href="area.html" id="nav-area">Area Riservata</a></li>
+    </ul>
 </nav>
 
-<!-- PAGE: SCOUTING -->
-<div id="scoutingView">
-
-  <!-- HEADER -->
-  <div class="scouting-header">
-    <div style="display:flex;align-items:center;gap:.8rem">
-      <a href="fmto2.html" class="page-back-btn">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-        Indietro
-      </a>
-      <div class="scouting-title">🔍 SCOUTING AVANZATO</div>
+  <!-- TICKER -->
+  <div class="ticker">
+    <div class="ticker-lbl">Live</div>
+    <div class="ticker-inner">
+      <div class="ticker-track">
+        <span class="ticker-item"><span class="ticker-dot"></span>Modulo scouting FMTO 2.0 · Filtra 1.400 giocatori</span>
+        <span class="ticker-item"><span class="ticker-dot"></span>Combina anagrafica, ruolo, tecnica e rendimento</span>
+        <span class="ticker-item"><span class="ticker-dot"></span>Salva i profili nella tua watchlist dall'Area Riservata</span>
+        <span class="ticker-item"><span class="ticker-dot"></span>Ricerca avanzata pensata per Football Manager 26</span>
+        <span class="ticker-item"><span class="ticker-dot"></span>FMTO 2.0 — Scouting Room</span>
+        <span class="ticker-item"><span class="ticker-dot"></span>Modulo scouting FMTO 2.0 · Filtra 1.400 giocatori</span>
+        <span class="ticker-item"><span class="ticker-dot"></span>Combina anagrafica, ruolo, tecnica e rendimento</span>
+        <span class="ticker-item"><span class="ticker-dot"></span>Salva i profili nella tua watchlist dall'Area Riservata</span>
+        <span class="ticker-item"><span class="ticker-dot"></span>Ricerca avanzata pensata per Football Manager 26</span>
+        <span class="ticker-item"><span class="ticker-dot"></span>FMTO 2.0 — Scouting Room</span>
+      </div>
     </div>
   </div>
 
-  <!-- FILTERS -->
-  <div class="scout-filters" id="scoutFilters">
+  <!-- SCOUTING PAGE -->
+  <section class="sec gbg">
+    <div class="sec-tag">Area Scouting</div>
+    <h1 class="sec-title">Ricerca giocatori <span>avanzata</span></h1>
 
-    <!-- TECNICA -->
-    <div class="scout-filter-cat">TECNICA</div>
-    <div class="scout-filter-row"><span class="scout-filter-label">Colpo di testa</span>≥ <input class="scout-filter-input" data-attr="49" type="number" min="1" max="20"></div>
-    <div class="scout-filter-row"><span class="scout-filter-label">Contrasti</span>≥ <input class="scout-filter-input" data-attr="55" type="number" min="1" max="20"></div>
-    <div class="scout-filter-row"><span class="scout-filter-label">Controllo palla</span>≥ <input class="scout-filter-input" data-attr="47" type="number" min="1" max="20"></div>
-    <div class="scout-filter-row"><span class="scout-filter-label">Cross</span>≥ <input class="scout-filter-input" data-attr="44" type="number" min="1" max="20"></div>
-    <div class="scout-filter-row"><span class="scout-filter-label">Dribbling</span>≥ <input class="scout-filter-input" data-attr="45" type="number" min="1" max="20"></div>
-    <div class="scout-filter-row"><span class="scout-filter-label">Finalizzazione</span>≥ <input class="scout-filter-input" data-attr="46" type="number" min="1" max="20"></div>
-    <div class="scout-filter-row"><span class="scout-filter-label">Marcatura</span>≥ <input class="scout-filter-input" data-attr="52" type="number" min="1" max="20"></div>
-    <div class="scout-filter-row"><span class="scout-filter-label">Passaggi</span>≥ <input class="scout-filter-input" data-attr="53" type="number" min="1" max="20"></div>
-    <div class="scout-filter-row"><span class="scout-filter-label">Tecnica</span>≥ <input class="scout-filter-input" data-attr="56" type="number" min="1" max="20"></div>
-    <div class="scout-filter-row"><span class="scout-filter-label">Tiri da lontano</span>≥ <input class="scout-filter-input" data-attr="50" type="number" min="1" max="20"></div>
+    <p style="margin-top:.6rem;font-size:.84rem;color:var(--t2);max-width:640px">
+      Combina <strong>dati biografici</strong>, <strong>ruolo in campo</strong>, parametri
+      <strong>tecnici</strong> e <strong>metriche di rendimento</strong> per costruire la tua short‑list ideale.
+    </p>
 
-    <!-- CALCI PIAZZATI -->
-    <div class="scout-filter-cat">CALCI PIAZZATI</div>
-    <div class="scout-filter-row"><span class="scout-filter-label">Calci d'angolo</span>≥ <input class="scout-filter-input" data-attr="43" type="number" min="1" max="20"></div>
-    <div class="scout-filter-row"><span class="scout-filter-label">Calci piazzati</span>≥ <input class="scout-filter-input" data-attr="48" type="number" min="1" max="20"></div>
-    <div class="scout-filter-row"><span class="scout-filter-label">Rimesse lunghe</span>≥ <input class="scout-filter-input" data-attr="51" type="number" min="1" max="20"></div>
+    <div class="scout-layout">
 
-    <!-- MENTALI -->
-    <div class="scout-filter-cat">MENTALI</div>
-    <div class="scout-filter-row"><span class="scout-filter-label">Aggressività</span>≥ <input class="scout-filter-input" data-attr="29" type="number" min="1" max="20"></div>
-    <div class="scout-filter-row"><span class="scout-filter-label">Carisma</span>≥ <input class="scout-filter-input" data-attr="37" type="number" min="1" max="20"></div>
-    <div class="scout-filter-row"><span class="scout-filter-label">Concentrazione</span>≥ <input class="scout-filter-input" data-attr="33" type="number" min="1" max="20"></div>
-    <div class="scout-filter-row"><span class="scout-filter-label">Coraggio</span>≥ <input class="scout-filter-input" data-attr="31" type="number" min="1" max="20"></div>
-    <div class="scout-filter-row"><span class="scout-filter-label">Decisioni</span>≥ <input class="scout-filter-input" data-attr="34" type="number" min="1" max="20"></div>
-    <div class="scout-filter-row"><span class="scout-filter-label">Determinazione</span>≥ <input class="scout-filter-input" data-attr="35" type="number" min="1" max="20"></div>
-    <div class="scout-filter-row"><span class="scout-filter-label">Fantasia</span>≥ <input class="scout-filter-input" data-attr="36" type="number" min="1" max="20"></div>
-    <div class="scout-filter-row"><span class="scout-filter-label">Freddezza</span>≥ <input class="scout-filter-input" data-attr="32" type="number" min="1" max="20"></div>
-    <div class="scout-filter-row"><span class="scout-filter-label">Gioco di squadra</span>≥ <input class="scout-filter-input" data-attr="40" type="number" min="1" max="20"></div>
-    <div class="scout-filter-row"><span class="scout-filter-label">Impegno</span>≥ <input class="scout-filter-input" data-attr="42" type="number" min="1" max="20"></div>
-    <div class="scout-filter-row"><span class="scout-filter-label">Intuito</span>≥ <input class="scout-filter-input" data-attr="30" type="number" min="1" max="20"></div>
-    <div class="scout-filter-row"><span class="scout-filter-label">Posizione</span>≥ <input class="scout-filter-input" data-attr="39" type="number" min="1" max="20"></div>
-    <div class="scout-filter-row"><span class="scout-filter-label">Senza palla</span>≥ <input class="scout-filter-input" data-attr="38" type="number" min="1" max="20"></div>
-    <div class="scout-filter-row"><span class="scout-filter-label">Visione di gioco</span>≥ <input class="scout-filter-input" data-attr="41" type="number" min="1" max="20"></div>
+      <!-- 1° FINESTRA: Filtri di base -->
+      <div class="scout-panel">
+          <div class="scout-panel-title">
+            <span>Filtri di base</span>
+            <span class="scout-panel-meta">Anagrafica · Nazionalità · Ruolo</span>
+          </div>
 
-    <!-- FISICO -->
-    <div class="scout-filter-cat">FISICO</div>
-    <div class="scout-filter-row"><span class="scout-filter-label">Accelerazione</span>≥ <input class="scout-filter-input" data-attr="8"  type="number" min="1" max="20"></div>
-    <div class="scout-filter-row"><span class="scout-filter-label">Agilità</span>≥ <input class="scout-filter-input" data-attr="9"  type="number" min="1" max="20"></div>
-    <div class="scout-filter-row"><span class="scout-filter-label">Equilibrio</span>≥ <input class="scout-filter-input" data-attr="10" type="number" min="1" max="20"></div>
-    <div class="scout-filter-row"><span class="scout-filter-label">Forza</span>≥ <input class="scout-filter-input" data-attr="17" type="number" min="1" max="20"></div>
-    <div class="scout-filter-row"><span class="scout-filter-label">Integrità fisica</span>≥ <input class="scout-filter-input" data-attr="13" type="number" min="1" max="20"></div>
-    <div class="scout-filter-row"><span class="scout-filter-label">Elevazione</span>≥ <input class="scout-filter-input" data-attr="11" type="number" min="1" max="20"></div>
-    <div class="scout-filter-row"><span class="scout-filter-label">Resistenza</span>≥ <input class="scout-filter-input" data-attr="16" type="number" min="1" max="20"></div>
-    <div class="scout-filter-row"><span class="scout-filter-label">Velocità</span>≥ <input class="scout-filter-input" data-attr="14" type="number" min="1" max="20"></div>
-
-    <!-- GENERALI -->
-    <div class="scout-filter-cat">GENERALI</div>
-    <div class="scout-filter-row"><span class="scout-filter-label">CA minima</span>≥ <input class="scout-filter-input" id="scoutMinCA"  type="number" min="1" max="200"></div>
-    <div class="scout-filter-row"><span class="scout-filter-label">PA minima</span>≥ <input class="scout-filter-input" id="scoutMinPA"  type="number" min="1" max="200"></div>
-    <div class="scout-filter-row"><span class="scout-filter-label">Età max</span>≤ <input class="scout-filter-input" id="scoutMaxAge" type="number" min="15" max="45"></div>
-
-  </div><!-- /scout-filters -->
-
-  <!-- ACTIONS -->
-  <div class="scout-actions">
-    <button class="scout-btn scout-btn-primary" onclick="runScoutSearch()">🔍 Cerca</button>
-    <button class="scout-btn" onclick="clearScoutFilters()">Resetta filtri</button>
-    <select class="filter-select" id="scoutPosFilter" style="font-size:.82rem;padding:.45rem .6rem">
-      <option value="">Tutte le posizioni</option>
-      <option value="P">Portiere</option>
-      <option value="D">Difensore</option>
-      <option value="TF">Terzino</option>
-      <option value="M">Mediano</option>
-      <option value="C">Centrocampista</option>
-      <option value="T">Trequartista</option>
-      <option value="S">Attaccante</option>
-    </select>
-  </div>
-
-  <!-- RESULTS INFO -->
-  <div class="scout-results-info" id="scoutResultsInfo"></div>
-
-  <!-- TABLE -->
-  <div class="table-wrap">
-    <table id="scoutTable">
-      <thead>
-        <tr>
-          <th style="width:28%">Nome</th>
-          <th>Squadra</th>
-          <th>Pos</th>
-          <th style="width:40px">Età</th>
-          <th style="width:40px">CA</th>
-          <th style="width:40px">PA</th>
-          <th>Naz</th>
-        </tr>
-      </thead>
-      <tbody id="scoutBody">
-        <!-- Populated by runScoutSearch() -->
-        <tr>
-          <td colspan="8">
-            <div class="scout-empty">
-              <div class="ei">🔍</div>
-              <p>Imposta i filtri desiderati e premi <strong>Cerca</strong> per trovare giocatori</p>
+          <div class="scout-grid-2">
+            <div class="scout-field" style="grid-column:1 / span 2">
+              <label class="scout-label" for="f-name">Nome giocatore
+                <small>Ricerca libera per nome/cognome</small>
+              </label>
+              <input id="f-name" class="scout-input" type="text" placeholder="Es. &quot;Rossi&quot;, &quot;Mbappé&quot;, &quot;João&quot;">
             </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
 
-</div><!-- /scoutingView -->
+            <div class="scout-field">
+              <label class="scout-label" for="f-naz">Nazionalità
+                <small>Qualsiasi se vuoto</small>
+              </label>
+              <select id="f-naz" class="scout-select">
+                <option value="">Qualsiasi nazionalità</option>
+                <option value="Italia">Italia</option>
+                <option value="Francia">Francia</option>
+                <option value="Inghilterra">Inghilterra</option>
+                <option value="Germania">Germania</option>
+                <option value="Spagna">Spagna</option>
+                <option value="Portogallo">Portogallo</option>
+                <option value="Brasile">Brasile</option>
+                <option value="Argentina">Argentina</option>
+              </select>
+            </div>
 
-<footer>FMTO 2.0 — Football Manager Tournament Online — © 2025</footer>
+            <div class="scout-field">
+              <label class="scout-label" for="f-club">Club
+                <small>Squadra di appartenenza</small>
+              </label>
+              <input id="f-club" class="scout-input" type="text" placeholder="Es. &quot;Milan&quot;, &quot;Real Madrid&quot;…">
+            </div>
+            <div class="scout-field">
+              <label class="scout-pos-pill" style="display:inline-flex;align-items:center;gap:.5rem;cursor:pointer;margin:0">
+                <input type="checkbox" id="f-solo-svincolati" name="f-solo-svincolati" value="1">
+                <span class="scout-pos-label">Solo svincolati</span>
+              </label>
+              <small style="display:block;color:var(--t3);margin-top:.25rem">Mostra solo giocatori senza squadra</small>
+            </div>
 
-<script src="data.js"></script>
-<script>
-// ── helper classi CA/PA ──────────────────────────────────
-function caClass(ca) {
-  if (ca >= 160) return 'ca-elite';
-  if (ca >= 130) return 'ca-high';
-  if (ca >= 100) return 'ca-mid';
-  return 'ca-low';
-}
-function paClass(pa) {
-  if (pa >= 160) return 'pa-hi';
-  if (pa >= 120) return 'pa-mid';
-  return 'pa-lo';
-}
-function posLabel(p) {
-  return p || '—';
-}
+            <div class="scout-field">
+              <label class="scout-label">Età
+                <small>Intervallo minimo / massimo</small>
+              </label>
+              <div class="scout-inline">
+                <div class="scout-field">
+                  <label class="scout-label" for="f-age-min" style="justify-content:flex-start;gap:.3rem">
+                    <span>Min</span>
+                  </label>
+                  <input id="f-age-min" class="scout-input" type="number" min="15" max="45" placeholder="15">
+                </div>
+                <div class="scout-field">
+                  <label class="scout-label" for="f-age-max" style="justify-content:flex-start;gap:.3rem">
+                    <span>Max</span>
+                  </label>
+                  <input id="f-age-max" class="scout-input" type="number" min="15" max="45" placeholder="34">
+                </div>
+              </div>
+            </div>
 
-// ── PLAYERS ora viene da data.js (formato array)
-// Indici: [0]=id [1]=name [2]=squad [3]=pos [4]=age [5]=ca [6]=pa [7]=nat [8]=price [9]=attrs[]
+            <div class="scout-field">
+              <label class="scout-label" for="f-foot">Piede preferito
+                <small>Per filtrare destro/mancino</small>
+              </label>
+              <select id="f-foot" class="scout-select">
+                <option value="">Entrambi</option>
+                <option value="Destro">Destro</option>
+                <option value="Mancino">Mancino</option>
+                <option value="Entrambi">Ambidestro</option>
+              </select>
+            </div>
+          </div>
 
-function runScoutSearch() {
-  const minCA  = parseInt(document.getElementById('scoutMinCA').value)  || 0;
-  const minPA  = parseInt(document.getElementById('scoutMinPA').value)  || 0;
-  const maxAge = parseInt(document.getElementById('scoutMaxAge').value) || 999;
-  const posF   = document.getElementById('scoutPosFilter').value.trim().toLowerCase();
+          <div class="scout-field" style="margin-top:.9rem">
+            <label class="scout-label">Ruolo in campo
+              <small>Seleziona uno o più blocchi di posizione</small>
+            </label>
+            <p class="scout-hint" style="margin:.35rem 0 0 0;font-size:.8rem;color:var(--t3)">Puoi filtrare <strong>solo per ruolo</strong>: seleziona una o più posizioni (o il menu sotto) e clicca Cerca senza compilare nome, nazionalità o altri campi.</p>
+            <div class="scout-positions">
+              <label class="scout-pos-pill">
+                <input type="checkbox" name="pos" value="POR">
+                <span class="scout-pos-label">POR · Portiere</span>
+              </label>
+              <label class="scout-pos-pill">
+                <input type="checkbox" name="pos" value="DIF">
+                <span class="scout-pos-label">DIF · Difensori centrali</span>
+              </label>
+              <label class="scout-pos-pill">
+                <input type="checkbox" name="pos" value="TER">
+                <span class="scout-pos-label">TER · Terzini / Esterni dif.</span>
+              </label>
+              <label class="scout-pos-pill">
+                <input type="checkbox" name="pos" value="CEN">
+                <span class="scout-pos-label">CEN · Centrocampisti</span>
+              </label>
+              <label class="scout-pos-pill">
+                <input type="checkbox" name="pos" value="TRE">
+                <span class="scout-pos-label">TRE · Trequartisti / ali</span>
+              </label>
+              <label class="scout-pos-pill">
+                <input type="checkbox" name="pos" value="ATT">
+                <span class="scout-pos-label">ATT · Attaccanti</span>
+              </label>
+            </div>
+          </div>
 
-  // Raccoglie filtri attributo
-  const attrFilters = [];
-  document.querySelectorAll('.scout-filter-input[data-attr]').forEach(inp => {
-    const v = parseInt(inp.value);
-    if (!isNaN(v) && v > 0) attrFilters.push({ attrId: parseInt(inp.dataset.attr), min: v });
-  });
+          <div class="scout-actions">
+            <button type="button" class="btn-primary btn-cerca" id="btn-apply-filters"><span class="btn-icon">🔍</span> Cerca</button>
+            <button type="button" class="btn-ghost" id="btn-reset-filters">Resetta filtri</button>
+            <select id="f-pos-dropdown" class="scout-select scout-select-pos" title="Filtra per posizione">
+              <option value="">Tutte le posizioni</option>
+              <option value="POR">Portieri</option>
+              <option value="DIF">Difensori</option>
+              <option value="TER">Terzini</option>
+              <option value="CEN">Centrocampisti</option>
+              <option value="TRE">Trequartisti / Ali</option>
+              <option value="ATT">Attaccanti</option>
+            </select>
+          </div>
+        </div>
 
-  const results = PLAYERS.filter(p => {
-    if (p[5] < minCA)  return false;
-    if (p[6] < minPA)  return false;
-    if (p[4] > maxAge) return false;
-    if (posF && !p[3].toLowerCase().includes(posF)) return false;
-    for (const f of attrFilters) {
-      if (getAttr(p, f.attrId) < f.min) return false;
+      <!-- 2° FINESTRA: Ricerca avanzata -->
+      <div class="scout-panel scout-panel-adv">
+          <div class="scout-panel-title">
+            <span>Ricerca avanzata</span>
+            <span class="scout-panel-meta">Tecnica · Psicologia · Fisico · CA / PA</span>
+          </div>
+
+          <div class="scout-adv-body">
+            <div class="scout-adv-col">
+              <div class="scout-adv-title">⚙ Tecnica</div>
+
+              <div class="scout-field">
+                <label class="scout-label" for="t-tecnica-min">Tecnica</label>
+                <input id="t-tecnica-min" class="scout-input scout-input-num" type="number" min="0" max="20" value="0" placeholder="0">
+              </div>
+
+              <div class="scout-field">
+                <label class="scout-label" for="t-passaggi-min">Passaggi</label>
+                <input id="t-passaggi-min" class="scout-input scout-input-num" type="number" min="0" max="20" value="0" placeholder="0">
+              </div>
+
+              <div class="scout-field">
+                <label class="scout-label" for="t-dribbling-min">Dribbling</label>
+                <input id="t-dribbling-min" class="scout-input scout-input-num" type="number" min="0" max="20" value="0" placeholder="0">
+              </div>
+
+              <div class="scout-field">
+                <label class="scout-label" for="t-finalizzazione-min">Finalizzazione</label>
+                <input id="t-finalizzazione-min" class="scout-input scout-input-num" type="number" min="0" max="20" value="0" placeholder="0">
+              </div>
+
+              <div class="scout-field">
+                <label class="scout-label" for="t-tiro-lontano-min">Tiro da lontano</label>
+                <input id="t-tiro-lontano-min" class="scout-input scout-input-num" type="number" min="0" max="20" value="0" placeholder="0">
+              </div>
+
+              <div class="scout-field">
+                <label class="scout-label" for="t-cross-min">Cross</label>
+                <input id="t-cross-min" class="scout-input scout-input-num" type="number" min="0" max="20" value="0" placeholder="0">
+              </div>
+
+              <div class="scout-field">
+                <label class="scout-label" for="t-contrasto-min">Contrasto</label>
+                <input id="t-contrasto-min" class="scout-input scout-input-num" type="number" min="0" max="20" value="0" placeholder="0">
+              </div>
+
+              <div class="scout-field">
+                <label class="scout-label" for="t-marcatura-min">Marcatura</label>
+                <input id="t-marcatura-min" class="scout-input scout-input-num" type="number" min="0" max="20" value="0" placeholder="0">
+              </div>
+
+              <div class="scout-field">
+                <label class="scout-label" for="t-intercettamenti-min">Intercettamenti</label>
+                <input id="t-intercettamenti-min" class="scout-input scout-input-num" type="number" min="0" max="20" value="0" placeholder="0">
+              </div>
+
+              <div class="scout-field">
+                <label class="scout-label" for="t-colpo-testa-min">Colpo di testa</label>
+                <input id="t-colpo-testa-min" class="scout-input scout-input-num" type="number" min="0" max="20" value="0" placeholder="0">
+              </div>
+
+              <div class="scout-field">
+                <label class="scout-label" for="t-primo-tocco-min">Primo tocco</label>
+                <input id="t-primo-tocco-min" class="scout-input scout-input-num" type="number" min="0" max="20" value="0" placeholder="0">
+              </div>
+
+              <div class="scout-field">
+                <label class="scout-label" for="t-visione-min">Visione di gioco</label>
+                <input id="t-visione-min" class="scout-input scout-input-num" type="number" min="0" max="20" value="0" placeholder="0">
+              </div>
+
+              <div class="scout-field">
+                <label class="scout-label" for="t-calci-piazzati-min">Calci piazzati</label>
+                <input id="t-calci-piazzati-min" class="scout-input scout-input-num" type="number" min="0" max="20" value="0" placeholder="0">
+              </div>
+
+              <div class="scout-field">
+                <label class="scout-label" for="t-rigori-min">Rigori</label>
+                <input id="t-rigori-min" class="scout-input scout-input-num" type="number" min="0" max="20" value="0" placeholder="0">
+              </div>
+
+              <div class="scout-adv-title" style="margin-top:1.05rem">CA / PA</div>
+              <div class="scout-field">
+                <label class="scout-label" for="r-ca-min">CA minima</label>
+                <input id="r-ca-min" class="scout-input scout-input-num" type="number" min="0" max="200" placeholder="0">
+              </div>
+              <div class="scout-field">
+                <label class="scout-label" for="r-ca-max">CA massima</label>
+                <input id="r-ca-max" class="scout-input scout-input-num" type="number" min="0" max="200" placeholder="200">
+              </div>
+              <div class="scout-field">
+                <label class="scout-label" for="r-cp-min">PA minima</label>
+                <input id="r-cp-min" class="scout-input scout-input-num" type="number" min="0" max="200" placeholder="0">
+              </div>
+              <div class="scout-field">
+                <label class="scout-label" for="r-cp-max">PA massima</label>
+                <input id="r-cp-max" class="scout-input scout-input-num" type="number" min="0" max="200" placeholder="200">
+              </div>
+            </div>
+
+            <div class="scout-adv-col">
+              <div class="scout-adv-title">🧠 Psicologia</div>
+
+              <div class="scout-field">
+                <label class="scout-label" for="m-concentrazione-min">Concentrazione</label>
+                <input id="m-concentrazione-min" class="scout-input scout-input-num" type="number" min="0" max="20" value="0" placeholder="0">
+              </div>
+              <div class="scout-field">
+                <label class="scout-label" for="m-coraggio-min">Coraggio</label>
+                <input id="m-coraggio-min" class="scout-input scout-input-num" type="number" min="0" max="20" value="0" placeholder="0">
+              </div>
+              <div class="scout-field">
+                <label class="scout-label" for="m-determinazione-min">Determinazione</label>
+                <input id="m-determinazione-min" class="scout-input scout-input-num" type="number" min="0" max="20" value="0" placeholder="0">
+              </div>
+              <div class="scout-field">
+                <label class="scout-label" for="m-ambizione-min">Ambizione</label>
+                <input id="m-ambizione-min" class="scout-input scout-input-num" type="number" min="0" max="20" value="0" placeholder="0">
+              </div>
+              <div class="scout-field">
+                <label class="scout-label" for="m-fantasia-min">Fantasia</label>
+                <input id="m-fantasia-min" class="scout-input scout-input-num" type="number" min="0" max="20" value="0" placeholder="0">
+              </div>
+              <div class="scout-field">
+                <label class="scout-label" for="m-posizionamento-min">Posizionamento</label>
+                <input id="m-posizionamento-min" class="scout-input scout-input-num" type="number" min="0" max="20" value="0" placeholder="0">
+              </div>
+              <div class="scout-field">
+                <label class="scout-label" for="m-decisione-min">Decisione</label>
+                <input id="m-decisione-min" class="scout-input scout-input-num" type="number" min="0" max="20" value="0" placeholder="0">
+              </div>
+              <div class="scout-field">
+                <label class="scout-label" for="m-leadership-min">Leadership</label>
+                <input id="m-leadership-min" class="scout-input scout-input-num" type="number" min="0" max="20" value="0" placeholder="0">
+              </div>
+              <div class="scout-field">
+                <label class="scout-label" for="m-lavoro-squadra-min">Lavoro di squadra</label>
+                <input id="m-lavoro-squadra-min" class="scout-input scout-input-num" type="number" min="0" max="20" value="0" placeholder="0">
+              </div>
+              <div class="scout-field">
+                <label class="scout-label" for="m-aggressivita-min">Aggressività</label>
+                <input id="m-aggressivita-min" class="scout-input scout-input-num" type="number" min="0" max="20" value="0" placeholder="0">
+              </div>
+              <div class="scout-field">
+                <label class="scout-label" for="m-anticipazione-min">Anticipazione</label>
+                <input id="m-anticipazione-min" class="scout-input scout-input-num" type="number" min="0" max="20" value="0" placeholder="0">
+              </div>
+              <div class="scout-field">
+                <label class="scout-label" for="m-freddezza-min">Freddezza</label>
+                <input id="m-freddezza-min" class="scout-input scout-input-num" type="number" min="0" max="20" value="0" placeholder="0">
+              </div>
+              <div class="scout-field">
+                <label class="scout-label" for="m-professionalita-min">Professionalità</label>
+                <input id="m-professionalita-min" class="scout-input scout-input-num" type="number" min="0" max="20" value="0" placeholder="0">
+              </div>
+              <div class="scout-field">
+                <label class="scout-label" for="m-sportivita-min">Sportività</label>
+                <input id="m-sportivita-min" class="scout-input scout-input-num" type="number" min="0" max="20" value="0" placeholder="0">
+              </div>
+            </div>
+
+            <div class="scout-adv-col">
+              <div class="scout-adv-title">💪 Fisico</div>
+
+              <div class="scout-field">
+                <label class="scout-label" for="f-velocita-min">Velocità</label>
+                <input id="f-velocita-min" class="scout-input scout-input-num" type="number" min="0" max="20" value="0" placeholder="0">
+              </div>
+              <div class="scout-field">
+                <label class="scout-label" for="f-accelerazione-min">Accelerazione</label>
+                <input id="f-accelerazione-min" class="scout-input scout-input-num" type="number" min="0" max="20" value="0" placeholder="0">
+              </div>
+              <div class="scout-field">
+                <label class="scout-label" for="f-resistenza-min">Resistenza</label>
+                <input id="f-resistenza-min" class="scout-input scout-input-num" type="number" min="0" max="20" value="0" placeholder="0">
+              </div>
+              <div class="scout-field">
+                <label class="scout-label" for="f-forza-min">Forza</label>
+                <input id="f-forza-min" class="scout-input scout-input-num" type="number" min="0" max="20" value="0" placeholder="0">
+              </div>
+              <div class="scout-field">
+                <label class="scout-label" for="f-agilita-min">Agilità</label>
+                <input id="f-agilita-min" class="scout-input scout-input-num" type="number" min="0" max="20" value="0" placeholder="0">
+              </div>
+              <div class="scout-field">
+                <label class="scout-label" for="f-equilibrio-min">Equilibrio</label>
+                <input id="f-equilibrio-min" class="scout-input scout-input-num" type="number" min="0" max="20" value="0" placeholder="0">
+              </div>
+              <div class="scout-field">
+                <label class="scout-label" for="f-salto-min">Salto</label>
+                <input id="f-salto-min" class="scout-input scout-input-num" type="number" min="0" max="20" value="0" placeholder="0">
+              </div>
+              <div class="scout-field">
+                <label class="scout-label" for="f-forma-naturale-min">Forma naturale</label>
+                <input id="f-forma-naturale-min" class="scout-input scout-input-num" type="number" min="0" max="20" value="0" placeholder="0">
+              </div>
+
+              <div class="scout-adv-title" style="margin-top:1.05rem">🧤 Portiere</div>
+              <div class="scout-field">
+                <label class="scout-label" for="gk-riflessi-min">Riflessi</label>
+                <input id="gk-riflessi-min" class="scout-input scout-input-num" type="number" min="0" max="20" value="0" placeholder="0">
+              </div>
+              <div class="scout-field">
+                <label class="scout-label" for="gk-presa-min">Presa</label>
+                <input id="gk-presa-min" class="scout-input scout-input-num" type="number" min="0" max="20" value="0" placeholder="0">
+              </div>
+              <div class="scout-field">
+                <label class="scout-label" for="gk-tuffo-min">Tuffo</label>
+                <input id="gk-tuffo-min" class="scout-input scout-input-num" type="number" min="0" max="20" value="0" placeholder="0">
+              </div>
+              <div class="scout-field">
+                <label class="scout-label" for="gk-uno-contro-uno-min">1v1</label>
+                <input id="gk-uno-contro-uno-min" class="scout-input scout-input-num" type="number" min="0" max="20" value="0" placeholder="0">
+              </div>
+              <div class="scout-field">
+                <label class="scout-label" for="gk-uscita-alta-min">Uscita alta</label>
+                <input id="gk-uscita-alta-min" class="scout-input scout-input-num" type="number" min="0" max="20" value="0" placeholder="0">
+              </div>
+              <div class="scout-field">
+                <label class="scout-label" for="gk-rinvio-min">Rinvio</label>
+                <input id="gk-rinvio-min" class="scout-input scout-input-num" type="number" min="0" max="20" value="0" placeholder="0">
+              </div>
+              <div class="scout-field">
+                <label class="scout-label" for="gk-comando-area-min">Comando area</label>
+                <input id="gk-comando-area-min" class="scout-input scout-input-num" type="number" min="0" max="20" value="0" placeholder="0">
+              </div>
+              <div class="scout-field">
+                <label class="scout-label" for="gk-lancio-mani-min">Lancio con le mani</label>
+                <input id="gk-lancio-mani-min" class="scout-input scout-input-num" type="number" min="0" max="20" value="0" placeholder="0">
+              </div>
+              <div class="scout-field">
+                <label class="scout-label" for="gk-comunicazione-min">Comunicazione</label>
+                <input id="gk-comunicazione-min" class="scout-input scout-input-num" type="number" min="0" max="20" value="0" placeholder="0">
+              </div>
+            </div>
+          </div>
+        </div>
+
+    </div>
+  </section>
+
+  <script src="data.js"></script>
+  <script src="players.js"></script>
+  <script src="stipendi.js"></script>
+  <script src="config.js"></script>
+  <script src="shared.js"></script>
+  <script>
+    // ── SCOUTING LOGIC ──
+    function _preferredFoot(p) {
+      var rd = p.pie_des || 0;
+      var ls = p.pie_sin || 0;
+      if (!rd && !ls) return '';
+      if (Math.abs(rd - ls) <= 2 && Math.max(rd, ls) >= 10) return 'Entrambi';
+      return rd >= ls ? 'Destro' : 'Mancino';
     }
-    return true;
-  }).sort((a, b) => b[5] - a[5]);
 
-  renderScoutResults(results);
-}
+    function _roleGroups(p) {
+      var pos = (p.posizione || '').toUpperCase();
+      var groups = [];
+      if (!pos) return groups;
+      if (pos.startsWith('P')) groups.push('POR');
+      if (pos.startsWith('D')) {
+        if (pos.includes('TF')) groups.push('TER');
+        else groups.push('DIF');
+      }
+      if (pos.startsWith('M') || pos.startsWith('C')) groups.push('CEN');
+      if (pos.startsWith('T') || pos.startsWith('C/T')) groups.push('TRE');
+      if (pos.startsWith('S') || pos.startsWith('T/S')) groups.push('ATT');
+      return Array.from(new Set(groups));
+    }
 
-function renderScoutResults(results) {
-  const body = document.getElementById('scoutBody');
-  const info = document.getElementById('scoutResultsInfo');
+    function _readNumber(id) {
+      var el = document.getElementById(id);
+      if (!el || el.value === '' || el.value == null) return null;
+      var v = parseInt(el.value, 10);
+      return isNaN(v) ? null : v;
+    }
 
-  if (results.length === 0) {
-    info.textContent = 'Nessun giocatore trovato con questi criteri.';
-    body.innerHTML = `<tr><td colspan="8">
-      <div class="scout-empty">
-        <div class="ei">😕</div>
-        <p>Nessun risultato. Prova ad allentare i filtri.</p>
-      </div></td></tr>`;
-    return;
-  }
+    function _collectFilters() {
+      var name = document.getElementById('f-name').value.trim().toLowerCase();
+      var naz = document.getElementById('f-naz').value;
+      var club = document.getElementById('f-club').value.trim().toLowerCase();
+      var soloSvincolati = document.getElementById('f-solo-svincolati') && document.getElementById('f-solo-svincolati').checked;
+      var ageMin = _readNumber('f-age-min');
+      var ageMax = _readNumber('f-age-max');
+      var foot = document.getElementById('f-foot').value;
 
-  info.innerHTML = `<strong>${results.length}</strong> giocatori trovati`;
-  body.innerHTML = results.map(p => `
-    <tr>
-      <td style="width:32px;text-align:center">
-        <button class="wl-btn" title="Aggiungi a Watchlist" onclick="toggleWatchlist(${p[0]}, this)">
-          ${isInWatchlist(p[0]) ? '★' : '☆'}
-        </button>
-      </td>
-      <td class="player-name-cell">${p[1]}</td>
-      <td class="squad-cell">${logoHtml(p[2])}${p[2]}</td>
-      <td><span class="pos-badge">${p[3]}</span></td>
-      <td class="age-cell">${p[4]}</td>
-      <td class="ca-cell ${caClass(p[5])}">${p[5]}</td>
-      <td class="ca-cell ${paClass(p[6])}">${p[6]}</td>
-      <td class="nat-cell">${p[7] || '—'}</td>
-    </tr>`).join('');
-}
+      var posDropdown = document.getElementById('f-pos-dropdown');
+      var posChecked = Array.from(document.querySelectorAll('input[name="pos"]:checked')).map(function (c) { return c.value; });
+      var posGroups = posChecked.length > 0
+        ? posChecked
+        : (posDropdown && posDropdown.value ? [posDropdown.value] : []);
 
-function clearScoutFilters() {
-  document.querySelectorAll('.scout-filter-input').forEach(el => el.value = '');
-  document.getElementById('scoutPosFilter').value = '';
-  document.getElementById('scoutResultsInfo').textContent = '';
-  document.getElementById('scoutBody').innerHTML = `<tr><td colspan="8">
-    <div class="scout-empty">
-      <div class="ei">🔍</div>
-      <p>Imposta i filtri desiderati e premi <strong>Cerca</strong> per trovare giocatori</p>
-    </div></td></tr>`;
-}
+      function slider(id) {
+        var el = document.getElementById(id);
+        if (!el || el.value === '') return null;
+        var v = Number(el.value);
+        return isNaN(v) ? null : v;
+      }
 
-// ── Mappa logo squadra
-const SQUAD_LOGO = {};
-SQUADS.forEach(s => { if (s.logo) SQUAD_LOGO[s.name] = s.logo; });
-function logoHtml(squadName) {
-  return SQUAD_LOGO[squadName]
-    ? `<img src="${SQUAD_LOGO[squadName]}" class="logo-badge" alt="" onerror="this.style.display='none'">`
-    : '';
-}
+      var tech = {
+        tecn: slider('t-tecnica-min'),
+        pass: slider('t-passaggi-min'),
+        drib: slider('t-dribbling-min'),
+        final: slider('t-finalizzazione-min'),
+        tir_lont: slider('t-tiro-lontano-min'),
+        cross: slider('t-cross-min'),
+        cont: slider('t-contrasto-min'),
+        marc: slider('t-marcatura-min'),
+        int_ment: slider('t-intercettamenti-min'),
+        testa: slider('t-colpo-testa-min'),
+        gioc_prima: slider('t-primo-tocco-min'),
+        crea: slider('t-visione-min'),
+        angoli: slider('t-calci-piazzati-min'),
+        pun: slider('t-rigori-min')
+      };
 
-// ── Watchlist helpers (localStorage) ───────────────────
-function getWatchlist() {
-  try { return JSON.parse(localStorage.getItem('fmto_watchlist') || '[]'); }
-  catch(e) { return []; }
-}
-function isInWatchlist(id) { return getWatchlist().includes(id); }
-function toggleWatchlist(id, btn) {
-  let ids = getWatchlist();
-  if (ids.includes(id)) {
-    ids = ids.filter(x => x !== id);
-    btn.textContent = '☆';
-  } else {
-    ids.push(id);
-    btn.textContent = '★';
-  }
-  localStorage.setItem('fmto_watchlist', JSON.stringify(ids));
-  const c = document.getElementById('watchCount');
-  if (c) c.textContent = ids.length;
-}
-function updateWatchCount() {
-  const c = document.getElementById('watchCount');
-  if (c) c.textContent = getWatchlist().length;
-}
+      var ment = {
+        conc: slider('m-concentrazione-min'),
+        cor: slider('m-coraggio-min'),
+        det: slider('m-determinazione-min'),
+        car: slider('m-ambizione-min'),
+        fan: slider('m-fantasia-min'),
+        pos_ment: slider('m-posizionamento-min'),
+        dec: slider('m-decisione-min'),
+        // leadership, lavoro di squadra, aggressività, anticipazione, freddezza, professionalità, sportività
+        gioc_squa: slider('m-lavoro-squadra-min'),
+        agr: slider('m-aggressivita-min'),
+        int_ment_extra: slider('m-anticipazione-min'),
+        fred: slider('m-freddezza-min'),
+        imp: slider('m-professionalita-min'),
+        // sportività non mappato direttamente nei dati: slider presente ma ignorato a livello logico
+      };
 
-// ── Se arriva ?squad= dalla homepage, prefiltra subito ───
-(function() {
-  const params = new URLSearchParams(window.location.search);
-  const squad  = params.get('squad');
-  if (squad) {
-    const results = PLAYERS
-      .filter(p => p[2] === squad)
-      .sort((a, b) => b[5] - a[5]);
-    document.getElementById('scoutResultsInfo') &&
-      (document.getElementById('scoutResultsInfo').innerHTML =
-        `Giocatori di <strong>${squad}</strong>: <strong>${results.length}</strong>`);
-    renderScoutResults(results);
-  }
-})();
-</script>
+      var phys = {
+        vel: slider('f-velocita-min'),
+        acc: slider('f-accelerazione-min'),
+        res: slider('f-resistenza-min'),
+        forza: slider('f-forza-min'),
+        agi: slider('f-agilita-min'),
+        equ: slider('f-equilibrio-min'),
+        ele: slider('f-salto-min'),
+        int_fis: slider('f-forma-naturale-min')
+      };
+
+      var gk = {
+        rifl: slider('gk-riflessi-min'),
+        bloc_tir: slider('gk-presa-min'),
+        // "tuffo" non esiste come campo separato → usiamo riflessi/bloc_tir
+        uno_v_uno: slider('gk-uno-contro-uno-min'),
+        usc: slider('gk-uscita-alta-min'),
+        rinv: slider('gk-rinvio-min'),
+        aut_area: slider('gk-comando-area-min'),
+        ril: slider('gk-lancio-mani-min'),
+        comm: slider('gk-comunicazione-min')
+      };
+
+      var caPa = {
+        caMin: _readNumber('r-ca-min'),
+        caMax: _readNumber('r-ca-max'),
+        paMin: _readNumber('r-cp-min'),
+        paMax: _readNumber('r-cp-max')
+      };
+
+      return {
+        name: name,
+        naz: naz,
+        club: club,
+        soloSvincolati: !!soloSvincolati,
+        ageMin: ageMin,
+        ageMax: ageMax,
+        foot: foot,
+        posGroups: posGroups,
+        tech: tech,
+        ment: ment,
+        phys: phys,
+        gk: gk,
+        caPa: caPa
+      };
+    }
+
+    // Mappa una riga Supabase nel formato giocatore usato da scouting/schede
+    function _mapSupabaseRowToPlayer(r, idx) {
+      var get = function(keys) {
+        for (var i = 0; i < keys.length; i++) {
+          var v = r[keys[i]];
+          if (v !== undefined && v !== null && v !== '') return v;
+        }
+        return null;
+      };
+      var toInt = function(v) {
+        if (v == null || v === '') return null;
+        var n = parseInt(String(v).replace(/\s/g, '').replace(/[^\d.-]/g, ''), 10);
+        return isNaN(n) ? null : n;
+      };
+      var id = get(['id', 'ID', 'Id']);
+      return {
+        id: id != null ? String(id) : ('sv_' + idx),
+        nome: get(['Nome completo', 'Nome', 'nome']) || '—',
+        eta: toInt(get(['Età', 'Eta', 'eta', 'Age'])) ?? 0,
+        dob: get(['Data di nascita', 'Data nascita', 'dob']) || '',
+        ca: toInt(get(['CA', 'ca'])) ?? 0,
+        pa: toInt(get(['PA', 'pa'])) ?? 0,
+        naz: get(['Nazionalità', 'Nazionalita', 'naz', 'Naz']) || '',
+        squadra: 'SVINCOLATI',
+        prezzo: 0,
+        posizione: get(['Posizione', 'posizione', 'Pos', 'Ruolo']) || '—',
+        vel: toInt(get(['Velocità', 'Velocita', 'vel'])) ?? 0,
+        acc: toInt(get(['Accelerazione', 'acc'])) ?? 0,
+        tecn: toInt(get(['Tecnica', 'tecn'])) ?? 0,
+        pass: toInt(get(['Passaggi', 'pass'])) ?? 0,
+        final: toInt(get(['Finalizzazione', 'final'])) ?? 0,
+        drib: toInt(get(['Dribbling', 'drib'])) ?? 0,
+        marc: toInt(get(['Marcatura', 'marc'])) ?? 0,
+        cont: toInt(get(['Contrasti', 'cont'])) ?? 0,
+        dec: toInt(get(['Decisioni', 'dec'])) ?? 0,
+        fred: toInt(get(['Freddezza', 'fred'])) ?? 0,
+        conc: toInt(get(['Concentrazione', 'conc'])) ?? 0,
+        det: toInt(get(['Determinazione', 'det'])) ?? 0,
+        res: toInt(get(['Resistenza', 'res'])) ?? 0,
+        forza: toInt(get(['Forza', 'forza'])) ?? 0,
+        crea: toInt(get(['Creatività', 'Creativita', 'crea'])) ?? 0,
+        int_ment: toInt(get(['Intuito', 'int_ment', 'pos_ment'])) ?? 0,
+        rifl: toInt(get(['Riflessi', 'rifl'])) ?? 0,
+        uno_v_uno: toInt(get(['Uno contro Uno', 'uno_v_uno'])) ?? 0,
+        usc: toInt(get(['Uscite', 'usc'])) ?? 0
+      };
+    }
+
+    // Supabase: fetch svincolati quando si cerca "Solo svincolati"
+    async function _fetchSupabaseSvincolati(limit) {
+      if (typeof SUPABASE_URL === 'undefined' || !SUPABASE_URL ||
+          typeof SUPABASE_ANON_KEY === 'undefined' || !SUPABASE_ANON_KEY) {
+        return null;
+      }
+      var table = (typeof SVINCOLATI_TABLE !== 'undefined' && SVINCOLATI_TABLE) ? SVINCOLATI_TABLE : 'svincolati';
+      var url = SUPABASE_URL.replace(/\/+$/, '') + '/rest/v1/' + encodeURIComponent(table) + '?select=*';
+      if (limit && !isNaN(limit)) {
+        url += '&limit=' + encodeURIComponent(limit);
+      }
+      try {
+        var res = await fetch(url, {
+          headers: {
+            apikey: SUPABASE_ANON_KEY,
+            Authorization: 'Bearer ' + SUPABASE_ANON_KEY
+          }
+        });
+        if (!res.ok) return null;
+        var data = await res.json();
+        if (!Array.isArray(data)) return null;
+        return data.map(function(r, i) { return _mapSupabaseRowToPlayer(r, i); });
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function _matchPlayer(p, f) {
+      if (f.name && !p.nome.toLowerCase().includes(f.name)) return false;
+      if (f.naz && !(p.naz || '').includes(f.naz)) return false;
+      var squadNamesSet = new Set((typeof SQUADS !== 'undefined' ? SQUADS : []).map(function (s) { return s.name; }));
+      var isSvincolato = !squadNamesSet.has((p.squadra || '').trim().toUpperCase());
+      if (f.soloSvincolati && !isSvincolato) return false;
+      if (f.club && !f.soloSvincolati) {
+        var c = (f.club || '').toLowerCase().trim();
+        var wantSvincolati = c === 'svincolato' || c === 'svincolati' || c.indexOf('svincolat') !== -1;
+        if (wantSvincolati) {
+          if (!isSvincolato) return false;
+        } else if (!(p.squadra || '').toLowerCase().includes(f.club)) return false;
+      }
+
+      if (f.ageMin != null && p.eta < f.ageMin) return false;
+      if (f.ageMax != null && p.eta > f.ageMax) return false;
+
+      if (f.foot) {
+        var pf = _preferredFoot(p);
+        if (pf && pf !== f.foot) return false;
+      }
+
+      if (f.posGroups && f.posGroups.length) {
+        var g = _roleGroups(p);
+        if (!g.some(function (gg) { return f.posGroups.indexOf(gg) !== -1; })) return false;
+      }
+
+      function checkBlock(block, playerAccessor) {
+        for (var key in block) {
+          if (!Object.prototype.hasOwnProperty.call(block, key)) continue;
+          var thr = block[key];
+          if (thr == null) continue;
+          var val = playerAccessor(key);
+          if (val == null) return true;
+          if (val < thr) return false;
+        }
+        return true;
+      }
+
+      if (!checkBlock(f.tech, function (key) { return p[key]; })) return false;
+
+      if (!checkBlock(f.ment, function (key) {
+        if (key === 'int_ment_extra') return p.int_ment;
+        return p[key];
+      })) return false;
+
+      if (!checkBlock(f.phys, function (key) { return p[key]; })) return false;
+
+      var isGK = (p.posizione || '').toUpperCase().startsWith('P');
+      if (isGK && !checkBlock(f.gk, function (key) { return p[key]; })) return false;
+
+      var ca = parseInt(p.ca, 10);
+      var pa = parseInt(p.pa, 10);
+      if (isNaN(ca)) ca = null;
+      if (isNaN(pa)) pa = null;
+      var caMin = f.caPa && f.caPa.caMin != null ? parseInt(f.caPa.caMin, 10) : null;
+      var caMax = f.caPa && f.caPa.caMax != null ? parseInt(f.caPa.caMax, 10) : null;
+      var paMin = f.caPa && f.caPa.paMin != null ? parseInt(f.caPa.paMin, 10) : null;
+      var paMax = f.caPa && f.caPa.paMax != null ? parseInt(f.caPa.paMax, 10) : null;
+      if (caMin != null && ca !== null && ca < caMin) return false;
+      if (caMax != null && ca !== null && ca > caMax) return false;
+      if (paMin != null && pa !== null && pa < paMin) return false;
+      if (paMax != null && pa !== null && pa > paMax) return false;
+
+      return true;
+    }
+
+    async function applyScoutingFilters() {
+      var filters = _collectFilters();
+      var pool;
+      if (filters.soloSvincolati) {
+        // Prima prova a prendere i dati da Supabase (DB svincolati)
+        var fromSupabase = await _fetchSupabaseSvincolati(5000);
+        var localFallback = (typeof window.SVINCOLATI_SCOUTING !== 'undefined' && Array.isArray(window.SVINCOLATI_SCOUTING))
+          ? window.SVINCOLATI_SCOUTING
+          : (typeof PLAYERS_BY_TEAM !== 'undefined' && Array.isArray(PLAYERS_BY_TEAM['SVINCOLATI']) ? PLAYERS_BY_TEAM['SVINCOLATI'] : []);
+
+        if (fromSupabase && fromSupabase.length) {
+          pool = fromSupabase;
+        } else if (localFallback && localFallback.length) {
+          pool = localFallback;
+        } else {
+          alert('Non è stato possibile caricare i dati degli svincolati.\n\nVerifica la configurazione Supabase in config.js (SUPABASE_URL, SUPABASE_ANON_KEY, SVINCOLATI_TABLE).');
+          return;
+        }
+      } else {
+        var squadPlayers = typeof ALL_PLAYERS !== 'undefined' ? ALL_PLAYERS : [];
+        pool = squadPlayers;
+      }
+      if (!pool.length) return;
+      var matches = pool.filter(function (p) {
+        return _matchPlayer(p, filters);
+      });
+      var caA = parseInt(filters.caPa.caMin, 10);
+      var caB = parseInt(filters.caPa.caMax, 10);
+      var hasCaRange = !isNaN(caA) || !isNaN(caB);
+      matches.sort(function (a, b) {
+        var ca1 = parseInt(a.ca, 10) || 0;
+        var ca2 = parseInt(b.ca, 10) || 0;
+        if (ca1 !== ca2) return hasCaRange ? ca1 - ca2 : ca2 - ca1;
+        return a.nome.localeCompare(b.nome);
+      });
+      var maxStored = 2000;
+      try {
+        sessionStorage.setItem('fmto_scout_results', JSON.stringify(matches.slice(0, maxStored)));
+        sessionStorage.setItem('fmto_scout_total', String(matches.length));
+      } catch (e) {}
+      window.location.replace('scouting-risultati.html');
+    }
+
+    function resetScoutingFilters() {
+      document.getElementById('f-name').value = '';
+      document.getElementById('f-naz').value = '';
+      document.getElementById('f-club').value = '';
+      var cb = document.getElementById('f-solo-svincolati');
+      if (cb) cb.checked = false;
+      document.getElementById('f-age-min').value = '';
+      document.getElementById('f-age-max').value = '';
+      document.getElementById('f-foot').value = '';
+
+      document.querySelectorAll('input[name="pos"]').forEach(function (c) { c.checked = false; });
+      var posDrop = document.getElementById('f-pos-dropdown');
+      if (posDrop) posDrop.value = '';
+
+      document.querySelectorAll('.scout-input-num').forEach(function (r) {
+        r.value = '';
+      });
+
+      ['r-ca-min','r-ca-max','r-cp-min','r-cp-max'].forEach(function (id) {
+        var el = document.getElementById(id);
+        if (el) el.value = '';
+      });
+    }
+
+    document.getElementById('btn-apply-filters')?.addEventListener('click', applyScoutingFilters);
+    document.getElementById('btn-reset-filters')?.addEventListener('click', resetScoutingFilters);
+
+    var posDrop = document.getElementById('f-pos-dropdown');
+    document.querySelectorAll('input[name="pos"]').forEach(function (checkbox) {
+      checkbox.addEventListener('change', function () {
+        if (posDrop && checkbox.checked) posDrop.value = '';
+      });
+    });
+    if (posDrop) {
+      posDrop.addEventListener('change', function () {
+        if (posDrop.value) document.querySelectorAll('input[name="pos"]').forEach(function (c) { c.checked = false; });
+      });
+    }
+  </script>
 </body>
 </html>
+
