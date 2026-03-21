@@ -5,6 +5,7 @@
 const fs = require('fs');
 const path = require('path');
 const XLSX = require('xlsx');
+const { parseMercatoRows } = require('./mercato-parse-sheet');
 
 const PLAYERS_JS = path.join(__dirname, 'players.js');
 
@@ -41,6 +42,30 @@ function loadPlayers() {
   const src = fs.readFileSync(PLAYERS_JS, 'utf8');
   const fn = new Function(src + '\nreturn { PLAYERS_BY_TEAM, ALL_PLAYERS };');
   return fn();
+}
+
+/** Esporta righe Excel per la pagina mercato.html (mercato-movimenti.js). */
+function writeMercatoMovimentiJs(sourcePath, rows, intestazioni) {
+  const righe = rows.map((row) => ({
+    n: row._row,
+    giocatore: row.GIOCATORE != null ? String(row.GIOCATORE).trim() : '',
+    cedente: row.CEDENTE != null ? String(row.CEDENTE).trim() : '',
+    cessionaria: row.CESSIONARIA != null ? String(row.CESSIONARIA).trim() : '',
+    tipo: row.TIPO_SCAMBIO != null ? String(row.TIPO_SCAMBIO).trim() : '',
+    tipoRighe: Array.isArray(row.TIPO_RIGHE) ? row.TIPO_RIGHE : [],
+    costoCr: row.COSTO_CR != null ? String(row.COSTO_CR).trim() : '',
+    note: row.NOTE != null ? String(row.NOTE).trim() : '',
+    noteRighe: Array.isArray(row.NOTE_RIGHE) ? row.NOTE_RIGHE : [],
+  })).filter((r) => r.giocatore || r.cedente || r.cessionaria);
+
+  const payload = {
+    fonte: path.basename(sourcePath),
+    generatoIso: new Date().toISOString(),
+    intestazioni: intestazioni || null,
+    righe,
+  };
+  const out = 'window.MERCATO_MOVIMENTI = ' + JSON.stringify(payload) + ';\n';
+  fs.writeFileSync(path.join(__dirname, 'mercato-movimenti.js'), out, 'utf8');
 }
 
 /** Nomi in Excel -> nome esatto in DB (se diverso) */
@@ -118,7 +143,9 @@ function main() {
   }
 
   const wb = XLSX.readFile(XLSX_PATH);
-  const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+  const { rows, intestazioni } = parseMercatoRows(wb);
+  writeMercatoMovimentiJs(XLSX_PATH, rows, intestazioni);
+
   let { PLAYERS_BY_TEAM, ALL_PLAYERS } = loadPlayers();
 
   const validTeams = new Set(Object.keys(PLAYERS_BY_TEAM));
@@ -133,24 +160,26 @@ function main() {
   }
 
   const lastRowByPlayer = new Map();
-  rows.forEach((row, idx) => {
+  rows.forEach((row) => {
     const nome = row.GIOCATORE;
     const to = normTeam(row.CESSIONARIA);
     const from = normTeam(row.CEDENTE);
+    const excelRow = row._row;
     if (!nome || !to || !from) {
-      anomalies.push({ type: 'RIGA_INCOMPLETA', row: idx + 2, nome, from, to });
+      anomalies.push({ type: 'RIGA_INCOMPLETA', row: excelRow, nome, from, to });
       return;
     }
     lastRowByPlayer.set(normName(resolveDbName(nome)), {
       nomeRaw: nome,
       from,
       to,
-      excelRow: idx + 2,
+      excelRow,
     });
   });
 
   const seenPairs = new Map();
-  rows.forEach((row, idx) => {
+  rows.forEach((row) => {
+    const excelRow = row._row;
     const key = normName(resolveDbName(row.GIOCATORE));
     const to = normTeam(row.CESSIONARIA);
     const from = normTeam(row.CEDENTE);
@@ -161,11 +190,11 @@ function main() {
         type: 'TRASFERIMENTI_OPPOSTI_STESSO_GIOCATORE',
         giocatore: row.GIOCATORE,
         rigaPrecedente: seenPairs.get(rev),
-        riga: idx + 2,
+        riga: excelRow,
         nota: "Si applica l'ultima riga del file per questo giocatore.",
       });
     }
-    seenPairs.set(pair, idx + 2);
+    seenPairs.set(pair, excelRow);
   });
 
   for (const { nomeRaw, from, to, excelRow } of lastRowByPlayer.values()) {
