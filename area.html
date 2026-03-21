@@ -108,9 +108,9 @@
   </div>
 
   <div class="tabs">
-    <div class="tab active" onclick="switchTab('wl',this)">★ Watchlist</div>
-    <div class="tab" onclick="switchTab('squad',this)">📋 Mia Squadra</div>
-    <div class="tab" onclick="switchTab('tattica',this)">⚽ Tattiche</div>
+    <div class="tab active" data-tab="wl">★ Watchlist</div>
+    <div class="tab" data-tab="squad">📋 Mia Squadra</div>
+    <div class="tab" data-tab="tattica">⚽ Tattiche</div>
   </div>
 
   <!-- WATCHLIST -->
@@ -198,7 +198,8 @@ function showDashboard(sq) {
     dl.innerHTML=`<div style="width:100%;height:100%;background:linear-gradient(135deg,${sq.color1},${sq.color2});display:flex;align-items:center;justify-content:center;border-radius:50%;font-family:'Barlow Condensed',sans-serif;font-weight:800;color:#fff">${abbr}</div>`;
   }
   document.getElementById('dash-name').textContent=sq.name;
-  var mName = (typeof getMisterInfo === 'function') ? (getMisterInfo(sq.name).nome || '') : '';
+  var mInfo = (typeof getMisterInfo === 'function') ? getMisterInfo(sq.name) : null;
+  var mName = (mInfo && mInfo.nome) ? mInfo.nome : '';
   var showManager = mName || sq.manager || '—';
   document.getElementById('dash-manager').textContent=`Mister: ${showManager} · 🔒 Sessione attiva — watchlist privata`;
   tactSqName = sq.name;
@@ -209,6 +210,10 @@ function logout() {
   location.replace('home.html');
 }
 function switchTab(tab, el) {
+  if (!el) {
+    el = document.querySelector('.tabs .tab[data-tab="' + tab + '"]');
+  }
+  if (!el) return;
   document.querySelectorAll('.tabs .tab').forEach(t=>t.classList.remove('active'));
   el.classList.add('active');
   document.getElementById('tab-wl').style.display      = tab==='wl'      ? '' : 'none';
@@ -433,18 +438,21 @@ function renderTactics(){
       <div class="tact-row-num">${idx+1}</div>
       <div class="tact-row-pos">${pos.label}</div>
       <div><span class="tact-role-badge" style="background:${pos.c}22;border:1px solid ${pos.c}55;color:${pos.c}">${pos.label}</span></div>
-      <select class="tact-select" data-slot="${pos.id}" onchange="onTactSelect(this)">${pOpts(pid)}</select>
+      <select class="tact-select" data-slot="${pos.id}">${pOpts(pid)}</select>
     </div>`;
   }).join('');
   const benchRows=Array.from({length:BENCH_COUNT},(_,i)=>{
     const key='s'+(i+1), pid=state[key]||'';
     return`<div class="tact-s-row"><div class="tact-s-num">S${i+1}</div>
-      <select class="tact-select" data-slot="${key}" onchange="onTactSelect(this)">${pOpts(pid)}</select>
+      <select class="tact-select" data-slot="${key}">${pOpts(pid)}</select>
     </div>`;
   }).join('');
   document.getElementById('tact-rows').innerHTML=posRows+
     `<div style="background:#111318;padding:.4rem .6rem;font-size:.62rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#4b5563;border-bottom:1px solid rgba(255,255,255,.04)">A disposizione</div>`+
     benchRows;
+  document.querySelectorAll('#tact-rows .tact-select[data-slot]').forEach(function(sel){
+    sel.addEventListener('change', function(){ onTactSelect(sel); });
+  });
 }
 
 function onTactSelect(sel){
@@ -452,7 +460,15 @@ function onTactSelect(sel){
   saveTactState(); renderTactics();
 }
 
-populateSelect();
+function bindAreaEvents() {
+  document.querySelectorAll('.tabs .tab[data-tab]').forEach(function(tabEl){
+    tabEl.addEventListener('click', function(){
+      switchTab(tabEl.getAttribute('data-tab'), tabEl);
+    });
+  });
+}
+
+bindAreaEvents();
 </script>
 </body>
 </html>

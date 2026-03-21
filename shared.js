@@ -74,7 +74,7 @@ function fmtStipendio(v){
 function getStipendio(p){ return (typeof STIPENDI_BY_ID!=='undefined'&&STIPENDI_BY_ID[p.id])?STIPENDI_BY_ID[p.id]:null; }
 
 // ── WATCHLIST — per-squad, richiede autenticazione
-// La sessione attiva viene salvata in sessionStorage (dura finché la scheda è aperta)
+// Sessione in localStorage: resta dopo chiusura browser; si azzera solo con logout (endSession)
 // chiave: fmto_session → { sqId, sqName }
 // watchlist: fmto_wl_<sqId> → array giocatori
 
@@ -85,20 +85,38 @@ let _wlSyncTimer = null;
 let _wlSyncInFlight = false;
 let _wlRemoteAppliedForSq = null;
 
+function _sessionRawFromStorage() {
+  try {
+    let raw = localStorage.getItem(WL_SESSION_KEY);
+    if (raw) return raw;
+    raw = sessionStorage.getItem(WL_SESSION_KEY);
+    if (raw) {
+      try { localStorage.setItem(WL_SESSION_KEY, raw); } catch (e) {}
+      try { sessionStorage.removeItem(WL_SESSION_KEY); } catch (e) {}
+      return raw;
+    }
+  } catch (e) {}
+  return null;
+}
+
 /* Restituisce la sessione attiva o null */
 function getSession() {
-  try { return JSON.parse(sessionStorage.getItem(WL_SESSION_KEY)); }
-  catch { return null; }
+  try {
+    const raw = _sessionRawFromStorage();
+    return raw ? JSON.parse(raw) : null;
+  } catch { return null; }
 }
-/* Avvia sessione (chiamato da area.html dopo PIN corretto) */
+/* Avvia sessione (chiamato da pin.html dopo PIN corretto) */
 function startSession(sqId, sqName) {
-  sessionStorage.setItem(WL_SESSION_KEY, JSON.stringify({ sqId, sqName }));
+  try { sessionStorage.removeItem(WL_SESSION_KEY); } catch (e) {}
+  try { localStorage.setItem(WL_SESSION_KEY, JSON.stringify({ sqId, sqName })); } catch (e) {}
   // appena loggato, prova a caricare dal server (se configurato)
   try { syncWLFromServer(); } catch(e) {}
 }
 /* Termina sessione (logout) */
 function endSession() {
-  sessionStorage.removeItem(WL_SESSION_KEY);
+  try { localStorage.removeItem(WL_SESSION_KEY); } catch (e) {}
+  try { sessionStorage.removeItem(WL_SESSION_KEY); } catch (e) {}
 }
 
 /* Chiave localStorage per la WL dell'utente corrente (null se non loggato) */
