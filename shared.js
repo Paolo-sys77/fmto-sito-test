@@ -407,3 +407,80 @@ function enableAutoRefresh() {
   location.reload();
 }
 document.addEventListener('DOMContentLoaded', initAutoRefresh);
+
+// ── SCOUTING: risultati in IndexedDB (sessionStorage ~5MB non basta per elenchi grandi)
+var FMTO_SCOUT_DB = 'fmto_scouting_v1';
+var FMTO_SCOUT_STORE = 'bundle';
+var FMTO_SCOUT_KEY = 'last';
+
+function openScoutDb() {
+  return new Promise(function (resolve, reject) {
+    var req = indexedDB.open(FMTO_SCOUT_DB, 1);
+    req.onupgradeneeded = function (ev) {
+      var db = ev.target.result;
+      if (!db.objectStoreNames.contains(FMTO_SCOUT_STORE)) {
+        db.createObjectStore(FMTO_SCOUT_STORE);
+      }
+    };
+    req.onsuccess = function () { resolve(req.result); };
+    req.onerror = function () { reject(req.error); };
+  });
+}
+
+/** Salva tutti i giocatori trovati; resolve(true) se ok, false se IndexedDB non disponibile / errore */
+function saveScoutingResultsBundle(players, total) {
+  var n = total != null ? total : (players && players.length) || 0;
+  var payload = { players: players || [], total: n, savedAt: Date.now() };
+  return openScoutDb()
+    .then(function (db) {
+      return new Promise(function (resolve) {
+        try {
+          var tx = db.transaction(FMTO_SCOUT_STORE, 'readwrite');
+          tx.objectStore(FMTO_SCOUT_STORE).put(payload, FMTO_SCOUT_KEY);
+          tx.oncomplete = function () {
+            try {
+              db.close();
+              sessionStorage.removeItem('fmto_scout_results');
+              sessionStorage.removeItem('fmto_scout_total');
+              sessionStorage.setItem('fmto_scout_storage', 'idb');
+            } catch (e) {}
+            resolve(true);
+          };
+          tx.onerror = function () {
+            try { db.close(); } catch (e) {}
+            resolve(false);
+          };
+        } catch (e) {
+          try { db.close(); } catch (e2) {}
+          resolve(false);
+        }
+      });
+    })
+    .catch(function () { return false; });
+}
+
+/** Carica l’ultimo bundle salvato (o null) */
+function loadScoutingResultsBundle() {
+  return openScoutDb()
+    .then(function (db) {
+      return new Promise(function (resolve) {
+        try {
+          var tx = db.transaction(FMTO_SCOUT_STORE, 'readonly');
+          var r = tx.objectStore(FMTO_SCOUT_STORE).get(FMTO_SCOUT_KEY);
+          r.onsuccess = function () {
+            var v = r.result || null;
+            try { db.close(); } catch (e) {}
+            resolve(v);
+          };
+          r.onerror = function () {
+            try { db.close(); } catch (e) {}
+            resolve(null);
+          };
+        } catch (e) {
+          try { db.close(); } catch (e2) {}
+          resolve(null);
+        }
+      });
+    })
+    .catch(function () { return null; });
+}
