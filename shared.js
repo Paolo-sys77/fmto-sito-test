@@ -229,21 +229,27 @@ function scheduleWLSyncToServer() {
   }, 700);
 }
 
+/** Applica la WL remota solo se è davvero più nuova; [] remoto non cancella mai una WL locale già popolata (bug: [] è truthy in JS). */
+function _maybeApplyRemoteWatchlist(sqId, remote) {
+  if (!remote || remote.wl == null || !Array.isArray(remote.wl)) return false;
+  const localUpdated = _getWLUpdatedAt();
+  const remoteUpdated = Number(remote.updatedMs) || 0;
+  if (remoteUpdated <= localUpdated) return false;
+  const localWl = getWL();
+  if (remote.wl.length === 0 && localWl.length > 0) return false;
+  localStorage.setItem(WL_KEY_PREFIX + sqId, JSON.stringify(remote.wl));
+  _touchWLMeta(remoteUpdated);
+  try { refreshWLButtons(); } catch (e) {}
+  return true;
+}
+
 async function syncWLFromServer() {
   const s = getSession();
   if (!s || !_supabaseEnabled()) return;
   // evita doppio apply nello stesso caricamento per la stessa squadra
   if (_wlRemoteAppliedForSq === String(s.sqId)) return;
   const remote = await _fetchWLRemote(s.sqId);
-  if (!remote) return;
-  const localUpdated = _getWLUpdatedAt();
-  const remoteUpdated = Number(remote.updatedMs) || 0;
-  if (remote.wl && remoteUpdated > localUpdated) {
-    // applica remoto al localStorage e aggiorna meta
-    localStorage.setItem(WL_KEY_PREFIX + s.sqId, JSON.stringify(remote.wl));
-    _touchWLMeta(remoteUpdated);
-    try { refreshWLButtons(); } catch(e) {}
-  }
+  if (remote) _maybeApplyRemoteWatchlist(s.sqId, remote);
   _wlRemoteAppliedForSq = String(s.sqId);
 }
 
@@ -253,17 +259,10 @@ async function syncWLToServer() {
   if (_wlSyncInFlight) return;
   _wlSyncInFlight = true;
   try {
-    // prima: se il remoto è più nuovo, lo tiriamo giù (evita sovrascritture incrociate)
     const remote = await _fetchWLRemote(s.sqId);
-    const localUpdated = _getWLUpdatedAt();
-    const remoteUpdated = remote ? (Number(remote.updatedMs) || 0) : 0;
-    if (remote && remote.wl && remoteUpdated > localUpdated) {
-      localStorage.setItem(WL_KEY_PREFIX + s.sqId, JSON.stringify(remote.wl));
-      _touchWLMeta(remoteUpdated);
-      try { refreshWLButtons(); } catch(e) {}
-      return;
-    }
+    if (_maybeApplyRemoteWatchlist(s.sqId, remote)) return;
     const wl = getWL();
+    const localUpdated = _getWLUpdatedAt();
     const ok = await _pushWLRemote(s.sqId, wl, localUpdated || Date.now());
     if (ok) {
       // nulla, local resta fonte
@@ -279,12 +278,32 @@ function toggleWLPlayer(pid, squadName) {
     location.href = 'area.html';
     return;
   }
-  const players = (typeof PLAYERS_BY_TEAM !== 'undefined') ? (PLAYERS_BY_TEAM[squadName] || []) : [];
-  const p = players.find(pl => String(pl.id) === String(pid));
+  let p = null;
+  let squadLabel = squadName;
+  const cache = (typeof window !== 'undefined' && window.__fmtoWlPlayerCache) ? window.__fmtoWlPlayerCache : null;
+  if (cache && cache[String(pid)]) {
+    p = cache[String(pid)];
+  } else if (typeof PLAYERS_BY_TEAM !== 'undefined') {
+    const arr = PLAYERS_BY_TEAM[squadName] || [];
+    p = arr.find(pl => String(pl.id) === String(pid));
+    if (!p) {
+      for (const k of Object.keys(PLAYERS_BY_TEAM)) {
+        const list = PLAYERS_BY_TEAM[k];
+        if (!Array.isArray(list)) continue;
+        const found = list.find(pl => String(pl.id) === String(pid));
+        if (found) {
+          p = found;
+          if (!squadLabel) squadLabel = k;
+          break;
+        }
+      }
+    }
+  }
   if (!p) return;
   let wl = getWL();
+  const label = squadLabel || squadName || p.squadra || '';
   if (inWL(pid)) { wl = wl.filter(w => String(w.id) !== String(pid)); }
-  else { wl.push({ ...p, squadName }); }
+  else { wl.push({ ...p, squadName: label }); }
   saveWL(wl);
   refreshWLButtons();
 }

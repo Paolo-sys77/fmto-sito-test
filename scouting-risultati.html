@@ -88,6 +88,7 @@
   </section>
 
   <script src="data.js"></script>
+  <script src="players.js"></script>
   <script src="stipendi.js"></script>
   <script src="shared.js"></script>
   <script>
@@ -141,6 +142,8 @@
         if (currentPage < 1) currentPage = 1;
         var start = (currentPage - 1) * SCOUT_PAGE_SIZE;
         var slice = list.slice(start, start + SCOUT_PAGE_SIZE);
+        window.__fmtoWlPlayerCache = window.__fmtoWlPlayerCache || {};
+        slice.forEach(function (pl) { window.__fmtoWlPlayerCache[String(pl.id)] = pl; });
         var rows = slice.map(function (p, i) { return rowHtml(p, start + i); });
         tbody.innerHTML = rows.join('');
         if (countEl) {
