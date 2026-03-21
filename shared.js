@@ -122,7 +122,8 @@ function endSession() {
 /* Chiave localStorage per la WL dell'utente corrente (null se non loggato) */
 function _wlKey() {
   const s = getSession();
-  return s ? WL_KEY_PREFIX + s.sqId : null;
+  if (!s || s.sqId == null || String(s.sqId).trim() === '') return null;
+  return WL_KEY_PREFIX + s.sqId;
 }
 
 function getWL() {
@@ -134,7 +135,13 @@ function getWL() {
 function saveWL(wl) {
   const k = _wlKey();
   if (!k) return;
-  localStorage.setItem(k, JSON.stringify(wl));
+  try {
+    localStorage.setItem(k, JSON.stringify(wl));
+  } catch (err) {
+    console.error('FMTO saveWL:', err);
+    try { alert('Impossibile salvare la watchlist (memoria del browser piena o bloccata).'); } catch (e) {}
+    return;
+  }
   _touchWLMeta();
   scheduleWLSyncToServer();
 }
@@ -144,7 +151,8 @@ function inWL(pid) {
 
 function _wlMetaKey() {
   const s = getSession();
-  return s ? WL_SYNC_META_PREFIX + s.sqId : null;
+  if (!s || s.sqId == null || String(s.sqId).trim() === '') return null;
+  return WL_SYNC_META_PREFIX + s.sqId;
 }
 
 function _getWLUpdatedAt() {
@@ -259,20 +267,17 @@ async function syncWLToServer() {
   if (_wlSyncInFlight) return;
   _wlSyncInFlight = true;
   try {
-    const remote = await _fetchWLRemote(s.sqId);
-    if (_maybeApplyRemoteWatchlist(s.sqId, remote)) return;
+    // Solo push: un fetch+merge qui poteva sovrascrivere la WL locale appena salvata
+    // se il server aveva updated_ms più alto (dati vecchi o riga placeholder).
     const wl = getWL();
     const localUpdated = _getWLUpdatedAt();
-    const ok = await _pushWLRemote(s.sqId, wl, localUpdated || Date.now());
-    if (ok) {
-      // nulla, local resta fonte
-    }
+    await _pushWLRemote(s.sqId, wl, localUpdated || Date.now());
   } finally {
     _wlSyncInFlight = false;
   }
 }
 
-function toggleWLPlayer(pid, squadName) {
+function toggleWLPlayer(pid, squadName, knownPlayer) {
   if (!getSession()) {
     // Non autenticato → reindirizza all'area riservata
     location.href = 'area.html';
@@ -280,10 +285,13 @@ function toggleWLPlayer(pid, squadName) {
   }
   let p = null;
   let squadLabel = squadName;
+  if (knownPlayer != null && String(knownPlayer.id) === String(pid)) {
+    p = knownPlayer;
+  }
   const cache = (typeof window !== 'undefined' && window.__fmtoWlPlayerCache) ? window.__fmtoWlPlayerCache : null;
-  if (cache && cache[String(pid)]) {
+  if (!p && cache && cache[String(pid)]) {
     p = cache[String(pid)];
-  } else if (typeof PLAYERS_BY_TEAM !== 'undefined') {
+  } else if (!p && typeof PLAYERS_BY_TEAM !== 'undefined') {
     const arr = PLAYERS_BY_TEAM[squadName] || [];
     p = arr.find(pl => String(pl.id) === String(pid));
     if (!p) {
@@ -299,7 +307,10 @@ function toggleWLPlayer(pid, squadName) {
       }
     }
   }
-  if (!p) return;
+  if (!p) {
+    try { alert('Impossibile aggiungere alla watchlist: dati giocatore non trovati. Apri il profilo dalla pagina Squadre o aggiorna la pagina.'); } catch (e) {}
+    return;
+  }
   let wl = getWL();
   const label = squadLabel || squadName || p.squadra || '';
   if (inWL(pid)) { wl = wl.filter(w => String(w.id) !== String(pid)); }
