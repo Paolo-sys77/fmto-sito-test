@@ -174,7 +174,7 @@
         var isSvincolato = !set.has((p.squadra || '').trim().toUpperCase());
         var squadParam = isSvincolato ? 'SVINCOLATI' : (p.squadra || '');
         if (isSvincolato) { try { sessionStorage.setItem('fmto_card_player', JSON.stringify(p)); } catch (e) {} }
-        location.href = 'squadre.html?sq=' + encodeURIComponent(squadParam) + '&pid=' + encodeURIComponent(String(p.id)) + (isSvincolato ? '&from=scouting' : '');
+        location.href = 'squadre.html?sq=' + encodeURIComponent(squadParam) + '&pid=' + encodeURIComponent(String(p.id)) + '&from=scouting';
       };
 
       function initWithData(players, totalMeta) {
