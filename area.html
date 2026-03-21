@@ -188,6 +188,14 @@
 <script src="config.js"></script>
 <script src="shared.js"></script>
 <script>
+function areaRosterPlayers(squadName) {
+  var s = typeof getSession === 'function' ? getSession() : null;
+  if (typeof getRosterPlayersBySquadNames === 'function') {
+    return getRosterPlayersBySquadNames(squadName, s && s.sqName);
+  }
+  return [];
+}
+
 function showDashboard(sq) {
   document.getElementById('dashboard').classList.add('active');
   const dl = document.getElementById('dash-logo');
@@ -203,7 +211,8 @@ function showDashboard(sq) {
   var showManager = mName || sq.manager || '—';
   document.getElementById('dash-manager').textContent=`Mister: ${showManager} · 🔒 Sessione attiva — watchlist privata`;
   tactSqName = sq.name;
-  renderWatchlist(); renderMySquad(sq);
+  try { renderWatchlist(); } catch (e) { console.error('renderWatchlist', e); }
+  try { renderMySquad(sq); } catch (e) { console.error('renderMySquad', e); }
 }
 function logout() {
   endSession();
@@ -312,15 +321,22 @@ function initAreaReserved() {
     location.replace('pin.html');
     return;
   }
+  if (String(s.sqName || '') !== String(sq.name || '') && typeof startSession === 'function') {
+    startSession(sq.id, sq.name);
+  }
   showDashboard(sq);
 }
 
-initAreaReserved();
-
 /* ═══ MIA SQUADRA ═══ */
 function renderMySquad(sq) {
-  const players=PLAYERS_BY_TEAM[sq.name]||[];
-  document.getElementById('squad-tbody').innerHTML=sortByRole(players).map(p=>`
+  const tbody = document.getElementById('squad-tbody');
+  if (!tbody) return;
+  const players = areaRosterPlayers(sq.name);
+  if (!players.length) {
+    tbody.innerHTML = '<tr><td colspan="8" style="padding:1.5rem;color:var(--t2);line-height:1.5">Nessun giocatore trovato per questa squadra. Controlla che il file <code style="color:var(--vb)">players.js</code> sia presente sul server (stessa cartella di <code>area.html</code>) e che il nome squadra nei dati coincida.</td></tr>';
+    return;
+  }
+  tbody.innerHTML=sortByRole(players).map(p=>`
     <tr onclick="location.href='squadre.html?sq=${encodeURIComponent(sq.name)}&pid=${p.id}'" style="cursor:pointer">
       <td style="font-weight:500">${p.nome}</td>
       <td><span class="rb r-white">${displayRole(p.posizione)}</span></td>
@@ -367,6 +383,7 @@ function initTactics(){
   if(!tactInited){
     // build formation selector once
     const bar=document.getElementById('tact-formation-bar');
+    if (!bar) return;
     bar.innerHTML=`<label style="font-size:.68rem;color:#6b7280;font-weight:600;letter-spacing:.1em;text-transform:uppercase">Schema</label>
       <select id="tact-formation-sel" class="tact-select" style="max-width:120px;font-family:'Barlow Condensed',sans-serif;font-size:.9rem;font-weight:800" onchange="setFormation(this.value)">
         ${Object.keys(FORMATIONS).map(k=>`<option value="${k}">${FORMATIONS[k].label}</option>`).join('')}
@@ -374,8 +391,9 @@ function initTactics(){
     tactInited=true;
   }
   loadTactState();
-  document.getElementById('tact-formation-sel').value=curFormation;
-  renderTactics();
+  const fs = document.getElementById('tact-formation-sel');
+  if (fs) fs.value = curFormation;
+  try { renderTactics(); } catch (e) { console.error('renderTactics', e); }
 }
 
 function setTactPhase(phase,btn){
@@ -396,10 +414,23 @@ function setFormation(val){
 }
 
 function renderTactics(){
-  const players=PLAYERS_BY_TEAM[tactSqName]||[];
-  const sq=SQUADS.find(s=>s.name===tactSqName);
+  const players = areaRosterPlayers(tactSqName);
+  const sq = (typeof SQUADS !== 'undefined' && Array.isArray(SQUADS))
+    ? SQUADS.find(s => s.name === tactSqName || String(s.name).toUpperCase() === String(tactSqName || '').toUpperCase())
+    : null;
   const state=curPhaseState(), color1=sq?sq.color1:'#8b5cf6', slots=curSlots();
-  if(document.getElementById('tact-formation-sel'))document.getElementById('tact-formation-sel').value=curFormation;
+  const fs = document.getElementById('tact-formation-sel');
+  if (fs) fs.value = curFormation;
+
+  if (!players.length) {
+    document.getElementById('tact-slots').innerHTML = '';
+    document.getElementById('tact-bench-list').innerHTML = '';
+    var bcEl = document.getElementById('tact-bench-count');
+    if (bcEl) bcEl.textContent = '0 di 15';
+    document.getElementById('tact-rows').innerHTML =
+      '<div class="tact-row" style="grid-column:1/-1;padding:1.2rem;color:var(--t2);line-height:1.55">Per compilare la formazione servono i dati rosa da <code style="color:var(--vb)">players.js</code>. Senza quel file (o se la squadra non coincide) non puoi assegnare i giocatori alle posizioni.</div>';
+    return;
+  }
 
   // Pitch
   document.getElementById('tact-slots').innerHTML=slots.map(pos=>{
@@ -469,6 +500,7 @@ function bindAreaEvents() {
 }
 
 bindAreaEvents();
+initAreaReserved();
 </script>
 </body>
 </html>

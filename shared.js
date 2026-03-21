@@ -119,6 +119,54 @@ function endSession() {
   try { sessionStorage.removeItem(WL_SESSION_KEY); } catch (e) {}
 }
 
+/** Normalizza nome squadra per confronti (stesso criterio utile tra data.js e players.js). */
+function normalizeSquadRosterKey(name) {
+  return String(name || '').trim().toUpperCase().replace(/\s+/g, ' ');
+}
+
+/**
+ * Rosa per uno o più nomi squadra (es. nome da SQUADS + eventuale sqName in sessione).
+ * 1) PLAYERS_BY_TEAM chiave esatta, 2) chiave case-insensitive, 3) ALL_PLAYERS filtrato per squadra.
+ * Allineato al comportamento di squadre.html quando la chiave oggetto non coincide al millimetro.
+ */
+function getRosterPlayersBySquadNames(/* name1, name2, ... */) {
+  const raw = Array.prototype.slice.call(arguments).filter(function (n) { return n != null && String(n).trim() !== ''; });
+  const seen = {};
+  const names = [];
+  for (let i = 0; i < raw.length; i++) {
+    const k = normalizeSquadRosterKey(raw[i]);
+    if (!k || seen[k]) continue;
+    seen[k] = true;
+    names.push(raw[i]);
+  }
+  for (let j = 0; j < names.length; j++) {
+    const list = rosterPlayersFromSingleSquadName(names[j]);
+    if (list.length) return list;
+  }
+  return [];
+}
+
+function rosterPlayersFromSingleSquadName(sqName) {
+  if (!sqName || typeof PLAYERS_BY_TEAM === 'undefined') return [];
+  const direct = PLAYERS_BY_TEAM[sqName];
+  if (Array.isArray(direct) && direct.length) return direct;
+  const t = normalizeSquadRosterKey(sqName);
+  const keys = Object.keys(PLAYERS_BY_TEAM);
+  for (let i = 0; i < keys.length; i++) {
+    const key = keys[i];
+    if (normalizeSquadRosterKey(key) === t) {
+      const arr = PLAYERS_BY_TEAM[key];
+      if (Array.isArray(arr) && arr.length) return arr;
+    }
+  }
+  if (typeof ALL_PLAYERS !== 'undefined' && Array.isArray(ALL_PLAYERS)) {
+    return ALL_PLAYERS.filter(function (p) {
+      return p && normalizeSquadRosterKey(p.squadra) === t;
+    });
+  }
+  return [];
+}
+
 /* Chiave localStorage per la WL dell'utente corrente (null se non loggato) */
 function _wlKey() {
   const s = getSession();
