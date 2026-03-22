@@ -1,5 +1,10 @@
-/** File JSON degli svincolati (stesso dominio del sito). Usato dallo scouting se Supabase non è disponibile.
- *  Su GitHub Pages: committa svincolati.json nella root del repo oppure imposta qui un URL assoluto.
+/** Parquet svincolati letto nel browser con DuckDB-WASM (nessuna conversione a JS in build).
+ *  Percorso relativo al sito, es. data/svincolati.parquet. Stringa vuota = non usare Parquet.
+ */
+var SVINCOLATI_PARQUET_URL = 'data/svincolati.parquet';
+
+/** File JSON svincolati (fallback se Parquet e Supabase non disponibili).
+ *  Su GitHub Pages: pubblica svincolati.json nella root oppure imposta un URL assoluto.
  */
 var SVINCOLATI_DATA_URL = 'svincolati.json';
 

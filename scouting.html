@@ -787,16 +787,27 @@
           if (!isNaN(paMinF) && paMinF >= 150 && (caMinF == null || isNaN(caMinF))) {
             fetchOpts.orderByPa = true;
           }
+          var fromParquet = null;
+          if (typeof SVINCOLATI_PARQUET_URL !== 'undefined' && SVINCOLATI_PARQUET_URL) {
+            try {
+              var _duckMod = await import('./duckdb-svincolati.mjs');
+              fromParquet = await _duckMod.loadSvincolatiPlayersFromParquet(SVINCOLATI_PARQUET_URL);
+            } catch (e) {
+              console.warn('FMTO scouting: DuckDB Parquet', e);
+            }
+          }
           var fromSupabase = await _fetchAllSupabaseSvincolati(fetchOpts);
           var fromJson = null;
-          if (!fromSupabase || !fromSupabase.length) {
+          if ((!fromParquet || !fromParquet.length) && (!fromSupabase || !fromSupabase.length)) {
             fromJson = await _fetchSvincolatiFromJsonFile();
           }
           var localFallback = (typeof window.SVINCOLATI_SCOUTING !== 'undefined' && Array.isArray(window.SVINCOLATI_SCOUTING))
             ? window.SVINCOLATI_SCOUTING
             : (typeof PLAYERS_BY_TEAM !== 'undefined' && Array.isArray(PLAYERS_BY_TEAM['SVINCOLATI']) ? PLAYERS_BY_TEAM['SVINCOLATI'] : []);
 
-          if (fromSupabase && fromSupabase.length) {
+          if (fromParquet && fromParquet.length) {
+            pool = fromParquet;
+          } else if (fromSupabase && fromSupabase.length) {
             pool = fromSupabase;
           } else if (fromJson && fromJson.length) {
             pool = fromJson;
@@ -804,8 +815,9 @@
             pool = localFallback;
           } else {
             alert('Non è stato possibile caricare gli svincolati.\n\n' +
-              '1) Supabase: controlla in config.js SUPABASE_URL, SUPABASE_ANON_KEY e SVINCOLATI_TABLE (tabella e permessi RLS per lettura anonima).\n\n' +
-              '2) File locale: pubblica nella root del sito il file svincolati.json (stesso percorso di index.html) oppure esegui node build-svincolati-inline.js per generare svincolati-scouting.js e includilo nella pagina.');
+              '1) Parquet: in config.js imposta SVINCOLATI_PARQUET_URL (es. data/svincolati.parquet) e pubblica il file; serve DuckDB-WASM nel browser (prima ricerca può richiedere tempo).\n\n' +
+              '2) Supabase: controlla SUPABASE_URL, SUPABASE_ANON_KEY e SVINCOLATI_TABLE (RLS lettura anonima).\n\n' +
+              '3) Fallback: svincolati.json in root o svincolati-scouting.js incluso nella pagina.');
             return;
           }
         } else {
