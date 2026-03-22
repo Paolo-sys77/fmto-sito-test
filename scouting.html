@@ -620,10 +620,11 @@
       }
       orderOpts = orderOpts || {};
       var table = (typeof SVINCOLATI_TABLE !== 'undefined' && SVINCOLATI_TABLE) ? SVINCOLATI_TABLE : 'svincolati';
-      var orderCol = 'CA';
+      // PostgreSQL/PostgREST: colonne senza virgolette sono minuscolo (ca/pa), non CA/PA — order errato → 500
+      var orderCol = 'ca';
       var orderDir = orderOpts.caDesc !== false ? 'desc' : 'asc';
       if (orderOpts.orderByPa) {
-        orderCol = 'PA';
+        orderCol = 'pa';
         orderDir = 'desc';
       }
       var q = ['select=*', 'order=' + orderCol + '.' + orderDir];
