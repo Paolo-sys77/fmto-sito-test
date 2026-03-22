@@ -1,6 +1,7 @@
 /**
- * Legge il primo foglio mercato: A–C fisse, poi colonne tipo (D…), costo (E…), note (F…).
- * Supporta più colonne sotto D e sotto F e una seconda riga di intestazioni.
+ * Legge il primo foglio mercato: colonne GIOCATORE, CEDENTE, CESSIONARIA (ordine qualsiasi),
+ * poi colonne «tipo scambio» dall’indice dopo max(GIO,CED,CESS) fino alla colonna COSTO/CR (esclusa),
+ * poi COSTO CR, poi note. Supporta più colonne tipo/note e seconda riga intestazioni.
  */
 const XLSX = require('xlsx');
 
@@ -60,15 +61,23 @@ function parseMercatoRows(wb) {
   const iG = colIndex(h0, ['GIOCATORE'], 0);
   const iCess = colIndex(h0, ['CESSIONARIA'], 1);
   const iCed = colIndex(h0, ['CEDENTE'], 2);
+  const afterTeamCols = Math.max(iG, iCed, iCess);
 
   let iCosto = colIndex(
     h0,
     ['COSTO CR', 'COSTO IN CR', 'COSTO (CR)', 'CR', 'COSTO'],
-    Math.min(4, Math.max(iCed + 1, 3))
+    Math.min(4, Math.max(afterTeamCols + 1, 3))
   );
   if (iCosto <= iCed) iCosto = iCed + 1;
   if (iCosto <= iCess) iCosto = iCess + 1;
   if (iCosto <= iCed) iCosto = Math.min(iCed + 2, 99);
+  if (iCosto <= afterTeamCols) {
+    iCosto = colIndex(
+      h0,
+      ['COSTO CR', 'COSTO IN CR', 'COSTO (CR)', 'CR', 'COSTO'],
+      afterTeamCols + 1
+    );
+  }
 
   const sheetWidth = Math.max(
     h0.length,
@@ -76,15 +85,16 @@ function parseMercatoRows(wb) {
     ...raw.slice(dataStart).map((r) => (r && r.length) || 0)
   );
 
+  /** Colonne «tipo scambio»: dopo l’ultima tra GIOCATORE / CEDENTE / CESSIONARIA, fino a (esclusa) COSTO CR. */
   const tipoCols = [];
-  for (let c = iCed + 1; c < iCosto && c < sheetWidth; c++) {
+  for (let c = afterTeamCols + 1; c < iCosto && c < sheetWidth; c++) {
     tipoCols.push(c);
   }
-  if (tipoCols.length === 0 && iCed + 1 < iCosto) {
-    for (let c = iCed + 1; c < iCosto; c++) tipoCols.push(c);
+  if (tipoCols.length === 0 && afterTeamCols + 1 < iCosto) {
+    for (let c = afterTeamCols + 1; c < iCosto; c++) tipoCols.push(c);
   }
-  if (tipoCols.length === 0 && iCed + 1 < sheetWidth) {
-    tipoCols.push(iCed + 1);
+  if (tipoCols.length === 0 && afterTeamCols + 1 < sheetWidth) {
+    tipoCols.push(afterTeamCols + 1);
   }
 
   const noteCols = [];
