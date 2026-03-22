@@ -4,9 +4,30 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FMTO 2.0 — Scouting</title>
+  <!-- DuckDB-WASM (jsDelivr) importa "apache-arrow" come bare specifier: serve risolverlo prima di import() -->
+  <script type="importmap">
+  {
+    "imports": {
+      "apache-arrow": "https://cdn.jsdelivr.net/npm/apache-arrow@17.0.0/Arrow.dom.mjs"
+    }
+  }
+  </script>
   <link rel="stylesheet" href="style.css">
+  <style>
+    .proto-warn{display:none;background:rgba(251,191,36,.1);border:1px solid rgba(251,191,36,.35);color:var(--t1);padding:.85rem 1.1rem;margin:0 auto;max-width:1100px;border-radius:10px;font-size:.8rem;line-height:1.55;position:relative;z-index:5}
+    .proto-warn code{color:var(--vb);font-size:.74rem}
+    .proto-warn .proto-warn-x{float:right;background:transparent;border:1px solid var(--border);color:var(--t2);padding:.2rem .55rem;border-radius:6px;cursor:pointer;font-size:.72rem;margin-left:.75rem}
+    .proto-warn .proto-warn-x:hover{border-color:var(--vb);color:var(--vb)}
+  </style>
 </head>
 <body class="gbg scout-page-fm26">
+  <div id="proto-warn" class="proto-warn" role="status">
+    <button type="button" class="proto-warn-x" onclick="this.parentElement.style.display='none'" aria-label="Chiudi">Chiudi</button>
+    <strong>Stai usando file://</strong> (pagina aperta dal disco). Con questo protocollo il browser <strong>blocca</strong> moduli JavaScript (<code>duckdb-svincolati.mjs</code>), <code>fetch</code> su Parquet/JSON e DuckDB-WASM. Apri il sito con un server locale, dalla cartella del progetto:
+    <code>npx --yes serve . -l 3000</code>
+    poi <code>http://localhost:3000/scouting.html</code> (oppure estensione Live Server in Cursor/VS Code).
+  </div>
+  <script>if (location.protocol === 'file:') { var w = document.getElementById('proto-warn'); if (w) w.style.display = 'block'; }</script>
 
   <!-- NAV -->
   <nav>
@@ -796,7 +817,15 @@
               console.warn('FMTO scouting: DuckDB Parquet', e);
             }
           }
-          var fromSupabase = await _fetchAllSupabaseSvincolati(fetchOpts);
+          /** Supabase solo se esplicitamente attivo o se non usi Parquet come sorgente (evita richieste 400/404 inutili). */
+          var preferParquet = typeof SVINCOLATI_PARQUET_URL !== 'undefined' && String(SVINCOLATI_PARQUET_URL).trim() !== '';
+          var useSupabaseSvincolati = typeof SVINCOLATI_USE_SUPABASE !== 'undefined'
+            ? !!SVINCOLATI_USE_SUPABASE
+            : !preferParquet;
+          var fromSupabase = null;
+          if (useSupabaseSvincolati) {
+            fromSupabase = await _fetchAllSupabaseSvincolati(fetchOpts);
+          }
           var fromJson = null;
           if ((!fromParquet || !fromParquet.length) && (!fromSupabase || !fromSupabase.length)) {
             fromJson = await _fetchSvincolatiFromJsonFile();
