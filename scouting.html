@@ -4,11 +4,13 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>FMTO 2.0 — Scouting</title>
-  <!-- DuckDB-WASM (jsDelivr) importa "apache-arrow" come bare specifier: serve risolverlo prima di import() -->
+  <!-- Dipendenze di DuckDB-WASM / apache-arrow (bare specifier → URL jsdelivr) -->
   <script type="importmap">
   {
     "imports": {
-      "apache-arrow": "https://cdn.jsdelivr.net/npm/apache-arrow@17.0.0/Arrow.dom.mjs"
+      "apache-arrow": "https://cdn.jsdelivr.net/npm/apache-arrow@17.0.0/Arrow.dom.mjs",
+      "tslib": "https://cdn.jsdelivr.net/npm/tslib@2.8.1/tslib.es6.mjs",
+      "flatbuffers": "https://cdn.jsdelivr.net/npm/flatbuffers@24.3.25/mjs/flatbuffers.js"
     }
   }
   </script>
