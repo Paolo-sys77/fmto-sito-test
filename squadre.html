@@ -234,9 +234,44 @@ body.card-only-from-scouting #view-grid,body.card-only-from-scouting #view-squad
   .vs-header-row{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:.5rem .65rem;padding:.55rem .55rem}
   .vs-vs-badge{font-size:.95rem;flex-shrink:0}
   .vs-player-name{font-size:.88rem;line-height:1.15}
-  .vs-row{grid-template-columns:minmax(0,1fr) 40px minmax(50px,64px) 40px minmax(0,1fr);gap:.3rem .55rem;padding:.28rem .35rem}
-  .vs-row>div:last-child{padding-left:.55rem}
-  .vs-attr-name{padding:0 .25rem;font-size:.64rem;line-height:1.2}
+  /* Riga attributo sopra (100%), valori sotto a metà — evita sovrapposizioni con nomi lunghi */
+  .vs-row{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    justify-content:space-between;
+    row-gap:.4rem;
+    column-gap:.45rem;
+    padding:.42rem .35rem;
+  }
+  .vs-attr-name{
+    order:-1;
+    flex:0 0 100%;
+    width:100%;
+    max-width:100%;
+    grid-column:auto;
+    padding:.1rem .2rem .15rem;
+    font-size:.62rem;
+    line-height:1.3;
+    word-wrap:break-word;
+    overflow-wrap:break-word;
+    hyphens:auto;
+  }
+  .vs-row>div:first-child{
+    grid-column:auto;
+    flex:1 1 44%;
+    min-width:0;
+    max-width:50%;
+    justify-content:flex-end;
+  }
+  .vs-row>div:last-child{
+    grid-column:auto;
+    flex:1 1 44%;
+    min-width:0;
+    max-width:50%;
+    padding-left:.35rem;
+    justify-content:flex-start;
+  }
 }
 @media(max-width:480px){
   .value-strip{
@@ -1195,6 +1230,35 @@ function vsSelect(pid, sqName){
   buildComparison(p1,p2);
 }
 
+/** Stessi attributi e ordine di buildFMColumns (schede giocatore) */
+const VS_ATTRS_GK_TECH=[
+  ['Autorità in area','aut_area'],['Comunicazione','comm'],['Controllo di palla','gioc_prima'],['Eccentricità','ecc'],
+  ['Palle alte','pal_alt'],['Passaggi','pass'],['Presa','bloc_tir'],['Respinte di pugno','risp_pug'],
+  ['Riflessi','rifl'],['Rimesse','ril'],['Rinvii','rinv'],['Uno contro uno','uno_v_uno'],['Uscite','usc'],
+];
+const VS_ATTRS_GK_PSYCH=[
+  ['Aggressività','agr'],['Carisma','car'],['Concentrazione','conc'],['Coraggio','cor'],['Decisioni','dec'],['Determinazione','det'],
+  ['Fantasia','fan'],['Freddezza','fred'],['Gioco di squadra','gioc_squa'],['Impegno','imp'],['Intuito','int_ment'],
+  ['Posizione','pos_ment'],['Senza palla','senza_palla'],['Visione di gioco','fan'],
+];
+const VS_ATTRS_GK_PHYS=[
+  ['Accelerazione','acc'],['Agilità','agi'],['Equilibrio','equ'],['Forza','forza'],['Integrità fisica','int_fis'],
+  ['Mass. elevazione','ele'],['Resistenza','res'],['Velocità','vel'],['Calci piazzati','pun'],['Tecnica','tecn'],
+];
+const VS_ATTRS_OUT_TECH=[
+  ['Colpi di testa','testa'],['Contrasti','cont'],['Controllo palla','gioc_prima'],['Cross','cross'],['Dribbling','drib'],
+  ['Finalizzazione','final'],['Marcatura','marc'],['Passaggi','pass'],['Tecnica','tecn'],['Tiri da lontano','tir_lont'],
+];
+const VS_ATTRS_OUT_PSYCH=[
+  ['Aggressività','agr'],['Carisma','car'],['Concentrazione','conc'],['Coraggio','cor'],['Decisioni','dec'],['Determinazione','det'],
+  ['Fantasia','fan'],['Freddezza','fred'],['Gioco di squadra','gioc_squa'],['Impegno','imp'],['Intuito','int_ment'],
+  ['Posizione','pos_ment'],['Visione di gioco','fan'],
+];
+const VS_ATTRS_OUT_PHYS=[
+  ['Accelerazione','acc'],['Agilità','agi'],['Equilibrio','equ'],['Forza','forza'],['Integrità fisica','int_fis'],
+  ['Mass. elevazione','ele'],['Resistenza','res'],['Velocità','vel'],
+];
+
 function buildComparison(p1,p2){
   const compEl=document.getElementById('vs-comparison');
   compEl.style.display='block';
@@ -1204,31 +1268,13 @@ function buildComparison(p1,p2){
   const bothGK=isGK1&&isGK2;
 
   const GROUPS=bothGK ? [
-    {title:'Portiere',attrs:[
-      ['Riflessi','rifl'],['Uno contro uno','uno_v_uno'],['Uscite','usc'],['Presa','bloc_tir'],
-      ['Rinvii','rinv'],['Respinte di pugno','risp_pug'],['Rilanci','ril'],['Palle alte','pal_alt'],
-      ['Comunicazione','comm'],
-    ]},
-    {title:'Psicologia',attrs:[
-      ['Coraggio','cor'],['Decisioni','dec'],['Determinazione','det'],
-      ['Freddezza','fred'],['Concentrazione','conc'],['Intuito','int_ment'],
-    ]},
-    {title:'Fisico',attrs:[
-      ['Accelerazione','acc'],['Agilità','agi'],['Forza','forza'],['Resistenza','res'],['Velocità','vel'],
-    ]},
+    {title:'Portiere',attrs:VS_ATTRS_GK_TECH},
+    {title:'Psicologia',attrs:VS_ATTRS_GK_PSYCH},
+    {title:'Fisico',attrs:VS_ATTRS_GK_PHYS},
   ] : [
-    {title:'Tecnica',attrs:[
-      ['Colpi di testa','testa'],['Contrasti','cont'],['Controllo di palla','gioc_prima'],
-      ['Cross','cross'],['Dribbling','drib'],['Finalizzazione','final'],
-      ['Marcatura','marc'],['Passaggi','pass'],['Tecnica','tecn'],['Tiri da lontano','tir_lont'],
-    ]},
-    {title:'Psicologia',attrs:[
-      ['Coraggio','cor'],['Creatività','crea'],['Decisioni','dec'],['Determinazione','det'],
-      ['Fantasia','fan'],['Freddezza','fred'],['Impegno','imp'],['Intuito','int_ment'],
-    ]},
-    {title:'Fisico',attrs:[
-      ['Accelerazione','acc'],['Agilità','agi'],['Forza','forza'],['Resistenza','res'],['Velocità','vel'],
-    ]},
+    {title:'Tecnica',attrs:VS_ATTRS_OUT_TECH},
+    {title:'Psicologia',attrs:VS_ATTRS_OUT_PSYCH},
+    {title:'Fisico',attrs:VS_ATTRS_OUT_PHYS},
   ];
 
   const c1='#22d3a0', c2='#a78bfa';
