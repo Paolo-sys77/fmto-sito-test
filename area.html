@@ -59,16 +59,16 @@
   }
   .tact-lab-btn:hover{border-color:#c4b5fd;color:#c4b5fd}
   .tact-lab-btn.active{background:rgba(34,211,160,.12);border-color:#22d3a0;color:#22d3a0}
-.tact-left{flex-shrink:0;width:340px}
-.tact-pitch-outer{position:relative;width:100%}
+.tact-left{flex-shrink:0;width:min(100%,420px)}
+.tact-pitch-outer{position:relative;width:100%;min-height:min(72vh,560px)}
 .tact-pitch-svg{width:100%;display:block;border-radius:6px;border:1px solid rgba(46,107,46,.4)}
 .tact-slots-layer{position:absolute;inset:0;pointer-events:none}
-.tact-slot{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:2px;pointer-events:all;cursor:default;z-index:2}
-.tact-shirt{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:.62rem;font-weight:800;border:2px solid rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.04em;box-shadow:0 2px 8px rgba(0,0,0,.5);line-height:1.1;text-align:center;padding:0 2px}
+.tact-slot{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:3px;pointer-events:all;cursor:default;z-index:2}
+.tact-shirt{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Barlow Condensed',sans-serif;font-size:.62rem;font-weight:800;border:2px solid rgba(255,255,255,.35);text-transform:uppercase;letter-spacing:.04em;box-shadow:0 2px 8px rgba(0,0,0,.5);line-height:1.1;text-align:center;padding:0 2px}
 .tact-shirt.empty{background:rgba(255,255,255,.07);color:rgba(255,255,255,.2);border-style:dashed;border-color:rgba(255,255,255,.15)}
 .tact-shirt.filled{color:#fff}
 .tact-slot-pos{font-size:.55rem;font-weight:700;color:rgba(255,255,255,.8);letter-spacing:.06em;text-transform:uppercase;background:rgba(0,0,0,.65);border-radius:3px;padding:1px 4px;white-space:nowrap}
-.tact-slot-name{font-size:.58rem;color:#e8eaf0;background:rgba(0,0,0,.7);border-radius:3px;padding:1px 5px;white-space:nowrap;max-width:72px;overflow:hidden;text-overflow:ellipsis}
+.tact-slot-name{font-size:.58rem;color:#e8eaf0;background:rgba(0,0,0,.7);border-radius:3px;padding:1px 5px;white-space:nowrap;max-width:84px;overflow:hidden;text-overflow:ellipsis}
 .tact-bench{margin-top:.9rem;background:#161824;border:1px solid rgba(255,255,255,.06);border-radius:6px;padding:.65rem .8rem}
 .tact-bench-title{font-size:.62rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#4b5563;margin-bottom:.5rem;display:flex;justify-content:space-between}
 .tact-bench-list{display:flex;flex-wrap:wrap;gap:.3rem}
@@ -94,6 +94,7 @@
 .tact-s-num{font-family:'Barlow Condensed',sans-serif;font-size:.72rem;font-weight:700;color:#374151}
 @media(max-width:720px){
   .tact-left{width:100%}
+  .tact-pitch-outer{min-height:min(58vh,480px)}
   .tact-right{min-width:100%}
   .tact-phase-bar{gap:.35rem}
   .tabs-tattica-group{width:100%}
@@ -470,6 +471,20 @@ function loadTactState(){
 }
 function curPhaseState(){return tactState[curTactPhase];}
 function curSlots(){return FORMATIONS[curFormation]?.slots||FORMATIONS['4-2-3-1'].slots;}
+/** Distribuisce meglio i marker sul campo (Area riservata): più larghezza e profondità rispetto al centro. */
+function spreadAreaPitchSlots(slots){
+  if(!Array.isArray(slots)) return slots;
+  var sx = 1.24;
+  var sy = 1.16;
+  return slots.map(function(pos){
+    var nx = 50 + (pos.x - 50) * sx;
+    var ny = 50 + (pos.y - 50) * sy;
+    return Object.assign({}, pos, {
+      x: Math.round(Math.min(93, Math.max(7, nx)) * 10) / 10,
+      y: Math.round(Math.min(91, Math.max(10, ny)) * 10) / 10
+    });
+  });
+}
 
 function initTactics(){
   if(!tactInited){
@@ -519,6 +534,7 @@ function renderTactics(){
     ? SQUADS.find(s => s.name === tactSqName || String(s.name).toUpperCase() === String(tactSqName || '').toUpperCase())
     : null;
   const state=curPhaseState(), color1=sq?sq.color1:'#8b5cf6', slots=curSlots();
+  const pitchSlots = spreadAreaPitchSlots(slots);
   const fs = document.getElementById('tact-formation-sel');
   if (fs) fs.value = curFormation;
 
@@ -532,8 +548,8 @@ function renderTactics(){
     return;
   }
 
-  // Pitch
-  document.getElementById('tact-slots').innerHTML=slots.map(pos=>{
+  // Pitch (coordinate dilatate rispetto allo schema base per meno affollamento visivo)
+  document.getElementById('tact-slots').innerHTML=pitchSlots.map(pos=>{
     const pid=state[pos.id]||null;
     const player=pid?players.find(p=>String(p.id)===String(pid)):null;
     const initials=player?player.nome.split(' ').map(w=>w[0]).join('').slice(0,3):'+';
