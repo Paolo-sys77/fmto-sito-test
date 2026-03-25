@@ -908,6 +908,7 @@
             return;
           }
         }
+        saveScoutingFiltersToSession();
         window.location.replace('scouting-risultati.html');
       } finally {
         if (btn) {
@@ -917,7 +918,68 @@
       }
     }
 
+    var FMTO_SCOUT_FILTERS_KEY = 'fmto_scout_filters';
+
+    function saveScoutingFiltersToSession() {
+      var nums = {};
+      document.querySelectorAll('.scout-input-num').forEach(function (el) {
+        if (el.id) nums[el.id] = el.value;
+      });
+      var pos = Array.from(document.querySelectorAll('input[name="pos"]:checked')).map(function (c) { return c.value; });
+      var solo = document.getElementById('f-solo-svincolati');
+      var state = {
+        v: 1,
+        fName: document.getElementById('f-name').value,
+        fNaz: document.getElementById('f-naz').value,
+        fClub: document.getElementById('f-club').value,
+        soloSvincolati: solo ? !!solo.checked : false,
+        ageMin: document.getElementById('f-age-min').value,
+        ageMax: document.getElementById('f-age-max').value,
+        foot: document.getElementById('f-foot').value,
+        posDropdown: document.getElementById('f-pos-dropdown') ? document.getElementById('f-pos-dropdown').value : '',
+        pos: pos,
+        nums: nums
+      };
+      try {
+        sessionStorage.setItem(FMTO_SCOUT_FILTERS_KEY, JSON.stringify(state));
+      } catch (e) {}
+    }
+
+    function restoreScoutingFiltersFromSession() {
+      try {
+        var raw = sessionStorage.getItem(FMTO_SCOUT_FILTERS_KEY);
+        if (!raw) return;
+        var s = JSON.parse(raw);
+        if (!s || s.v !== 1) return;
+        var el;
+        if (s.fName != null && (el = document.getElementById('f-name'))) el.value = s.fName;
+        if (s.fNaz != null && (el = document.getElementById('f-naz'))) el.value = s.fNaz;
+        if (s.fClub != null && (el = document.getElementById('f-club'))) el.value = s.fClub;
+        el = document.getElementById('f-solo-svincolati');
+        if (el && typeof s.soloSvincolati === 'boolean') el.checked = s.soloSvincolati;
+        if (s.ageMin != null && (el = document.getElementById('f-age-min'))) el.value = s.ageMin;
+        if (s.ageMax != null && (el = document.getElementById('f-age-max'))) el.value = s.ageMax;
+        if (s.foot != null && (el = document.getElementById('f-foot'))) el.value = s.foot;
+        if (s.posDropdown != null && (el = document.getElementById('f-pos-dropdown'))) el.value = s.posDropdown;
+        if (Array.isArray(s.pos)) {
+          document.querySelectorAll('input[name="pos"]').forEach(function (c) {
+            c.checked = s.pos.indexOf(c.value) !== -1;
+          });
+        }
+        if (s.nums && typeof s.nums === 'object') {
+          for (var id in s.nums) {
+            if (!Object.prototype.hasOwnProperty.call(s.nums, id)) continue;
+            el = document.getElementById(id);
+            if (el) el.value = s.nums[id];
+          }
+        }
+      } catch (e) {}
+    }
+
     function resetScoutingFilters() {
+      try {
+        sessionStorage.removeItem(FMTO_SCOUT_FILTERS_KEY);
+      } catch (e) {}
       document.getElementById('f-name').value = '';
       document.getElementById('f-naz').value = '';
       document.getElementById('f-club').value = '';
@@ -955,6 +1017,8 @@
         if (posDrop.value) document.querySelectorAll('input[name="pos"]').forEach(function (c) { c.checked = false; });
       });
     }
+
+    restoreScoutingFiltersFromSession();
   </script>
 </body>
 </html>
