@@ -35,7 +35,7 @@ body.card-only-from-scouting #view-grid,body.card-only-from-scouting #view-squad
 .fm-card{
   background:var(--card-surface,#161b22);border:1px solid var(--card-border,#2a3245);border-radius:4px;
   width:min(1020px,100%);box-shadow:0 20px 60px rgba(0,0,0,.6);
-  overflow:hidden;flex-shrink:0;margin:auto 0;
+  overflow:hidden;flex-shrink:0;margin:auto 0;position:relative;
 }
 
 /* HEADER — compatta, bordo rosso lato destro come mockup */
@@ -68,6 +68,21 @@ body.card-only-from-scouting #view-grid,body.card-only-from-scouting #view-squad
 .meta-tag.nation{color:#fff;display:flex;align-items:center;gap:3px;}
 .meta-tag .flag{font-size:12px;}
 .club-block{display:flex;flex-direction:column;align-items:flex-end;gap:4px;}
+.fmto-card-logo{
+  display:flex;align-items:center;gap:.4rem;margin-bottom:1px;align-self:flex-end;
+  user-select:none;pointer-events:none;
+}
+.fmto-card-logo-img{flex-shrink:0;display:block}
+.fmto-card-logo-text{display:flex;align-items:baseline;gap:3px}
+.fmto-card-logo .fmto-lg{
+  font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:14px;letter-spacing:.1em;text-transform:uppercase;
+  background:linear-gradient(135deg,#a78bfa,#22d3a0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+}
+.fmto-card-logo .fmto-lg-sub{
+  font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:9px;
+  background:linear-gradient(135deg,#a78bfa,#22d3a0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  opacity:.95;
+}
 .club-name{font-family:'Barlow Condensed',sans-serif;font-size:15px;font-weight:700;color:var(--card-accent,#c0392b);letter-spacing:.8px;}
 .club-capa{display:flex;gap:6px;align-items:center;margin-top:4px;}
 .capa-box{display:flex;flex-direction:column;align-items:center;gap:1px;}
@@ -230,6 +245,7 @@ body.card-only-from-scouting #view-grid,body.card-only-from-scouting #view-squad
 @media(max-width:768px){
   .card-header{grid-template-columns:1fr;text-align:left;}
   .club-block{align-items:flex-start;}
+  .fmto-card-logo{align-self:flex-end;margin-left:auto}
   /* Confronto: colonne esplicite + più aria tra centro e giocatore destro */
   .vs-header-row{grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:.5rem .65rem;padding:.55rem .55rem}
   .vs-vs-badge{font-size:.95rem;flex-shrink:0}
@@ -426,6 +442,19 @@ body.card-only-from-scouting #view-grid,body.card-only-from-scouting #view-squad
       </svg>
     </div>
     <div class="club-block">
+      <div class="fmto-card-logo" aria-label="FMTO 2.0">
+        <svg class="fmto-card-logo-img" width="28" height="28" viewBox="0 0 32 32" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="fmtoLogoGrad" x1="0" y1="0" x2="32" y2="32">
+              <stop offset="0%" stop-color="#a78bfa"/>
+              <stop offset="100%" stop-color="#22d3a0"/>
+            </linearGradient>
+          </defs>
+          <rect x="2" y="2" width="28" height="28" rx="7" fill="#0f1318" stroke="url(#fmtoLogoGrad)" stroke-width="2"/>
+          <text x="16" y="21" text-anchor="middle" fill="url(#fmtoLogoGrad)" font-family="Barlow Condensed,system-ui,sans-serif" font-weight="800" font-size="11">FM</text>
+        </svg>
+        <span class="fmto-card-logo-text"><span class="fmto-lg">FMTO</span><span class="fmto-lg-sub">2.0</span></span>
+      </div>
       <div class="club-name" id="fm-hdr-cname">—</div>
       <div class="club-capa">
         <div class="capa-box">
