@@ -415,8 +415,8 @@ function setTactLabBtnState(){
   btn.classList.toggle('active', !!tactLabMode);
   btn.textContent = '🧪 Laboratorio tattico: ' + (tactLabMode ? 'ON' : 'OFF');
   btn.title = tactLabMode
-    ? 'Rosa e watchlist sono sempre disponibili nei menu. ON = mostra etichette Rosa / WL / Rosa+WL accanto al nome.'
-    : 'Rosa e watchlist sono sempre disponibili nei menu. Attiva per mostrare le etichette di origine (Rosa, WL, Rosa+WL).';
+    ? 'Menu diviso: prima Rosa, poi Watchlist (WL) in coda, con etichette di origine.'
+    : 'Attiva per ordinare il menu (rosa prima, poi WL) e mostrare le etichette Rosa / WL / Rosa+WL.';
 }
 
 function loadTactLabMode(){
@@ -555,19 +555,45 @@ function renderTactics(){
       :`<div class="tact-bench-item empty">S${i+1}</div>`;
   }).join('');
 
-  // Rows
+  // Rows — con Laboratorio ON: prima rosa (ordinata), poi solo-WL in coda con etichetta WL
   function pOpts(currentPid){
-    return`<option value="">— Nessuno —</option>`+
-      sortByRole(players).map(p=>{
-        const used=Object.values(state).some(v=>v&&String(v)===String(p.id)&&String(p.id)!==String(currentPid));
-        var src='Rosa';
-        var hasR = !!inRoster[String(p.id)];
-        var hasW = !!inWL[String(p.id)];
-        if (hasR && hasW) src='Rosa+WL';
-        else if (!hasR && hasW) src='WL';
-        var labTag = tactLabMode ? (' · ' + src) : '';
-        return`<option value="${p.id}" ${String(p.id)===String(currentPid)?'selected':''} ${used?'disabled':''}>${p.nome} (${displayRole(p.posizione)} · CA ${p.ca})${labTag}</option>`;
-      }).join('');
+    function isUsedElsewhere(p){
+      return Object.values(state).some(function(v){
+        return v && String(v) === String(p.id) && String(p.id) !== String(currentPid);
+      });
+    }
+    function optLine(p){
+      var hasR = !!inRoster[String(p.id)];
+      var hasW = !!inWL[String(p.id)];
+      var labTag = '';
+      if (tactLabMode) {
+        if (hasR && hasW) labTag = ' · Rosa+WL';
+        else if (hasR) labTag = ' · Rosa';
+        else if (hasW) labTag = ' · WL';
+      }
+      return '<option value="' + p.id + '" ' +
+        (String(p.id) === String(currentPid) ? 'selected ' : '') +
+        (isUsedElsewhere(p) ? 'disabled ' : '') + '>' +
+        p.nome + ' (' + displayRole(p.posizione) + ' · CA ' + p.ca + ')' + labTag +
+        '</option>';
+    }
+    var head = '<option value="">— Nessuno —</option>';
+    if (!tactLabMode) {
+      return head + sortByRole(players).map(optLine).join('');
+    }
+    var rosterList = sortByRole(players.filter(function(p){
+      return p && p.id != null && inRoster[String(p.id)];
+    }));
+    var wlOnlyList = sortByRole(players.filter(function(p){
+      return p && p.id != null && !inRoster[String(p.id)] && inWL[String(p.id)];
+    }));
+    var gRosa = rosterList.length
+      ? '<optgroup label="Rosa">' + rosterList.map(optLine).join('') + '</optgroup>'
+      : '';
+    var gWL = wlOnlyList.length
+      ? '<optgroup label="Watchlist (WL)">' + wlOnlyList.map(optLine).join('') + '</optgroup>'
+      : '';
+    return head + gRosa + gWL;
   }
   const posRows=slots.map((pos,idx)=>{
     const pid=state[pos.id]||'';
