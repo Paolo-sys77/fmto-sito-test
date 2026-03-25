@@ -222,6 +222,7 @@ body.card-only-from-scouting #view-grid,body.card-only-from-scouting #view-squad
 .vs-val.vs-win-r{color:#c4b5fd;background:rgba(167,139,250,.22);border:1px solid rgba(167,139,250,.5);box-shadow:0 0 12px rgba(167,139,250,.12);font-weight:800}
 .vs-val.vs-lose{color:#6b7280;font-weight:600;opacity:.88}
 .vs-val.vs-draw{color:#9ca3af;font-weight:700}
+.vs-val.vs-missing{color:#6b7280;font-weight:600;background:transparent;border:none;box-shadow:none;opacity:.92}
 .vs-sec-hdr{font-size:.62rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#4b5563;padding:.5rem .4rem .2rem;grid-column:1/-1}
 
 /* ── PANEL: SIMILI ── */
@@ -578,6 +579,8 @@ var SVINCOLATI_SQUAD = { id:'svincolati', name:'SVINCOLATI', color1:'#6b7280', c
 let curSqName = null, sortCol = 'role', sortDir = 1;
 let curPlayerData = null;
 let openedFMCardFromGrid = false;
+/** Storia dedicata alla scheda: il gesto “indietro” chiude la scheda invece di uscire dalla pagina (es. verso Home). */
+window._fmtoCardPushed = false;
 var curSvincolatiList = [];
 function getCurrentSquadPlayers(){
   if(curSqName==='SVINCOLATI')return curSvincolatiList;
@@ -1021,6 +1024,27 @@ function openFMCard(pid, sqName, playerFromStorage){
   };
   if(typeof requestAnimationFrame!=='undefined') requestAnimationFrame(fillCard);
   else fillCard();
+  try {
+    history.pushState({ fmtoCard: true }, '', location.href);
+    window._fmtoCardPushed = true;
+  } catch (e2) {}
+}
+
+function _applyAfterCardCloseFromPopstate(){
+  var overlay = document.getElementById('fm-overlay');
+  if (overlay) overlay.classList.remove('open');
+  document.body.style.overflow = '';
+  window._fmtoCardPushed = false;
+  if (new URLSearchParams(location.search).get('from') === 'scouting') {
+    location.href = 'scouting-risultati.html';
+    return;
+  }
+  if (openedFMCardFromGrid) {
+    openedFMCardFromGrid = false;
+    showView('grid');
+  } else if (curSqName) {
+    showView('squad');
+  }
 }
 
 /* ═══ ATTR COLUMNS (3 sezioni con barre) ═══ */
@@ -1253,6 +1277,29 @@ function vsSelect(pid, sqName){
   buildComparison(p1,p2);
 }
 
+/** Come attrRowBarHTML: numero solo se presente, altrimenti null (scheda mostra —). */
+function vsAttrNum(p,key){
+  if(!p||key==null)return null;
+  const x=p[key];
+  if(x==null||x==='')return null;
+  const n=Number(x);
+  return isNaN(n)?null:n;
+}
+function vsCompareAttrRow(v1,v2){
+  const d1=v1!=null?String(v1):'—';
+  const d2=v2!=null?String(v2):'—';
+  const pct1=v1!=null?Math.min(100,Math.max(0,(v1/20)*100)):0;
+  const pct2=v2!=null?Math.min(100,Math.max(0,(v2/20)*100)):0;
+  let cls1,cls2;
+  if(v1==null&&v2==null){cls1=cls2='vs-missing';}
+  else if(v1==null){cls1='vs-missing';cls2='vs-win-r';}
+  else if(v2==null){cls1='vs-win-l';cls2='vs-missing';}
+  else if(v1>v2){cls1='vs-win-l';cls2='vs-lose';}
+  else if(v2>v1){cls1='vs-lose';cls2='vs-win-r';}
+  else{cls1=cls2='vs-draw';}
+  return{d1,d2,cls1,cls2,pct1,pct2};
+}
+
 /** Stessi attributi e ordine di buildFMColumns (schede giocatore) */
 const VS_ATTRS_GK_TECH=[
   ['Autorità in area','aut_area'],['Comunicazione','comm'],['Controllo di palla','gioc_prima'],['Eccentricità','ecc'],
@@ -1319,19 +1366,17 @@ function buildComparison(p1,p2){
     html+=`<div style="background:#1c1e2a;border:1px solid rgba(255,255,255,.06);border-radius:6px;margin-bottom:.6rem;overflow:hidden">
       <div style="background:#13151f;padding:.35rem .75rem;font-size:.62rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#6b7280">${g.title}</div>`;
     g.attrs.forEach(([name,key])=>{
-      const v1=p1[key]??0, v2=p2[key]??0;
-      const win1=v1>v2, win2=v2>v1;
-      const cls1=win1?'vs-win-l':win2?'vs-lose':'vs-draw';
-      const cls2=win2?'vs-win-r':win1?'vs-lose':'vs-draw';
+      const n1=vsAttrNum(p1,key), n2=vsAttrNum(p2,key);
+      const row=vsCompareAttrRow(n1,n2);
       html+=`<div class="vs-row">
         <div style="display:flex;align-items:center;justify-content:flex-end;gap:.4rem">
-          <div class="vs-bar-left" style="width:70px"><div class="vs-bar-fill-l" style="width:${(v1/20)*100}%;background:${c1}"></div></div>
-          <div class="vs-val ${cls1}">${v1}</div>
+          <div class="vs-bar-left" style="width:70px"><div class="vs-bar-fill-l" style="width:${row.pct1}%;background:${c1}"></div></div>
+          <div class="vs-val ${row.cls1}">${row.d1}</div>
         </div>
         <div class="vs-attr-name">${name}</div>
         <div style="display:flex;align-items:center;gap:.4rem">
-          <div class="vs-val ${cls2}">${v2}</div>
-          <div class="vs-bar-right" style="width:70px"><div class="vs-bar-fill-r" style="width:${(v2/20)*100}%;background:${c2}"></div></div>
+          <div class="vs-val ${row.cls2}">${row.d2}</div>
+          <div class="vs-bar-right" style="width:70px"><div class="vs-bar-fill-r" style="width:${row.pct2}%;background:${c2}"></div></div>
         </div>
       </div>`;
     });
@@ -1341,7 +1386,10 @@ function buildComparison(p1,p2){
   // Summary
   let p1wins=0, p2wins=0;
   GROUPS.forEach(g=>g.attrs.forEach(([,key])=>{
-    const v1=p1[key]??0,v2=p2[key]??0;
+    const v1=vsAttrNum(p1,key), v2=vsAttrNum(p2,key);
+    if(v1==null&&v2==null)return;
+    if(v1==null){p2wins++;return;}
+    if(v2==null){p1wins++;return;}
     if(v1>v2)p1wins++;else if(v2>v1)p2wins++;
   }));
   html+=`<div style="background:#1c1e2a;border:1px solid rgba(255,255,255,.06);border-radius:6px;padding:.65rem 1rem;display:flex;justify-content:space-around;align-items:center;margin-top:.4rem">
@@ -1416,14 +1464,11 @@ function buildSimili(p){
 /* ═══ CLOSE / WL / ESC ═══ */
 function closeFMCard(e){
   if(e&&e.target!==document.getElementById('fm-overlay'))return;
-  document.getElementById('fm-overlay').classList.remove('open');
-  document.body.style.overflow='';
-  if(new URLSearchParams(location.search).get('from')==='scouting'){
-    location.href='scouting-risultati.html';
-  } else if(openedFMCardFromGrid){
-    openedFMCardFromGrid = false;
-    showView('grid');
+  if (window._fmtoCardPushed) {
+    history.back();
+    return;
   }
+  _applyAfterCardCloseFromPopstate();
 }
 function toggleFMWL(){
   if(!curPlayerData)return;
@@ -1445,11 +1490,17 @@ function toggleFMWL(){
 }
 document.addEventListener('keydown',e=>{
   if(e.key==='Escape'){
-    document.getElementById('fm-overlay').classList.remove('open');
-    document.body.style.overflow='';
-    if(new URLSearchParams(location.search).get('from')==='scouting')location.href='scouting-risultati.html';
-    else if(openedFMCardFromGrid){ openedFMCardFromGrid=false; showView('grid'); }
+    var ov=document.getElementById('fm-overlay');
+    if(!ov||!ov.classList.contains('open'))return;
+    if(window._fmtoCardPushed){ history.back(); return; }
+    _applyAfterCardCloseFromPopstate();
   }
+});
+
+window.addEventListener('popstate',function(){
+  var ov=document.getElementById('fm-overlay');
+  if(!ov||!ov.classList.contains('open'))return;
+  _applyAfterCardCloseFromPopstate();
 });
 
 
