@@ -33,6 +33,32 @@
 .tact-phase-btn{background:#1c1e2a;border:1px solid rgba(255,255,255,.1);color:#9ca3af;font-family:'Barlow Condensed',sans-serif;font-size:.75rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:.4rem 1rem;border-radius:5px;cursor:pointer;transition:all .15s}
 .tact-phase-btn:hover{border-color:#c4b5fd;color:#c4b5fd}
 .tact-phase-btn.active{background:rgba(34,211,160,.12);border-color:#22d3a0;color:#22d3a0}
+  /* Laboratorio tattico: affianco al tab "Tattiche" */
+  .tabs-tattica-group{display:flex;align-items:stretch;gap:.45rem;flex-wrap:wrap}
+  .tabs-tattica-group .tact-lab-in-tabs{
+    display:none;
+    font-family:'Barlow Condensed',sans-serif;font-size:.76rem;font-weight:600;
+    letter-spacing:.09em;text-transform:uppercase;padding:.38rem .95rem;border-radius:6px;
+    cursor:pointer;border:1px solid var(--border);background:var(--card);color:var(--t2);
+    transition:all .14s;
+    align-items:center;justify-content:center;gap:.35rem;
+    white-space:nowrap;flex-shrink:0;min-height:2.15rem;
+    box-sizing:border-box;
+  }
+  .tabs-tattica-group .tab.active[data-tab="tattica"] ~ .tact-lab-in-tabs{display:inline-flex}
+  .tabs-tattica-group .tact-lab-in-tabs:hover{border-color:var(--v);color:var(--vb);background:rgba(139,92,246,.09)}
+  .tabs-tattica-group .tact-lab-in-tabs.active{border-color:#22d3a0;color:#22d3a0;background:rgba(34,211,160,.12)}
+  .tact-lab-btn{
+    background:#1c1e2a;border:1px solid rgba(255,255,255,.1);color:#9ca3af;
+    font-family:'Barlow Condensed',sans-serif;font-size:.75rem;font-weight:700;letter-spacing:.08em;
+    padding:.4rem .9rem;border-radius:5px;cursor:pointer;transition:all .15s;
+    display:inline-flex;align-items:center;gap:.35rem;
+    white-space:nowrap;
+    flex-shrink:0;
+    min-height:38px;
+  }
+  .tact-lab-btn:hover{border-color:#c4b5fd;color:#c4b5fd}
+  .tact-lab-btn.active{background:rgba(34,211,160,.12);border-color:#22d3a0;color:#22d3a0}
 .tact-left{flex-shrink:0;width:340px}
 .tact-pitch-outer{position:relative;width:100%}
 .tact-pitch-svg{width:100%;display:block;border-radius:6px;border:1px solid rgba(46,107,46,.4)}
@@ -66,7 +92,13 @@
 .tact-s-row:nth-child(odd){background:#161824}
 .tact-s-row:nth-child(even){background:#13151f}
 .tact-s-num{font-family:'Barlow Condensed',sans-serif;font-size:.72rem;font-weight:700;color:#374151}
-@media(max-width:720px){.tact-left{width:100%}.tact-right{min-width:100%}}
+@media(max-width:720px){
+  .tact-left{width:100%}
+  .tact-right{min-width:100%}
+  .tact-phase-bar{gap:.35rem}
+  .tabs-tattica-group{width:100%}
+  .tabs-tattica-group .tab.active[data-tab="tattica"] ~ .tact-lab-in-tabs{flex:1;min-width:12rem;justify-content:center}
+}
 </style>
 </head>
 <body class="gbg">
@@ -110,7 +142,10 @@
   <div class="tabs">
     <div class="tab active" data-tab="wl">★ Watchlist</div>
     <div class="tab" data-tab="squad">📋 Mia Squadra</div>
-    <div class="tab" data-tab="tattica">⚽ Tattiche</div>
+    <div class="tabs-tattica-group">
+      <div class="tab" data-tab="tattica">⚽ Tattiche</div>
+      <button id="tact-lab-btn" type="button" class="tact-lab-btn tact-lab-in-tabs" onclick="toggleTactLabMode()">🧪 Laboratorio tattico: OFF</button>
+    </div>
   </div>
 
   <!-- WATCHLIST -->
@@ -367,6 +402,63 @@ const BENCH_COUNT=15, TACT_KEY='fmto_tact_';
 let tactState={poss:{},noposs:{},poss_formation:'4-2-3-1',noposs_formation:'4-2-3-1'};
 let curTactPhase='poss', curFormation='4-2-3-1', tactSqName=null, tactInited=false;
 
+const TACT_LAB_KEY='fmto_tact_lab_';
+let tactLabMode=false;
+
+function tactLabStorageKey(){
+  return TACT_LAB_KEY + String(tactSqName || '');
+}
+
+function setTactLabBtnState(){
+  const btn=document.getElementById('tact-lab-btn');
+  if(!btn) return;
+  btn.classList.toggle('active', !!tactLabMode);
+  btn.textContent = '🧪 Laboratorio tattico: ' + (tactLabMode ? 'ON' : 'OFF');
+  btn.title = tactLabMode
+    ? 'Rosa e watchlist sono sempre disponibili nei menu. ON = mostra etichette Rosa / WL / Rosa+WL accanto al nome.'
+    : 'Rosa e watchlist sono sempre disponibili nei menu. Attiva per mostrare le etichette di origine (Rosa, WL, Rosa+WL).';
+}
+
+function loadTactLabMode(){
+  try{
+    tactLabMode = String(localStorage.getItem(tactLabStorageKey())) === '1';
+  }catch(e){
+    tactLabMode = false;
+  }
+  setTactLabBtnState();
+}
+
+function saveTactLabMode(){
+  try{
+    localStorage.setItem(tactLabStorageKey(), tactLabMode ? '1' : '0');
+  }catch(e){}
+  setTactLabBtnState();
+}
+
+function toggleTactLabMode(){
+  tactLabMode = !tactLabMode;
+  saveTactLabMode();
+  try{ renderTactics(); }catch(e){ console.error('renderTactics', e); }
+}
+
+function mergePlayersById(primaryArr, extraArr){
+  var out=[];
+  var seen={};
+  function pushFrom(arr){
+    if(!Array.isArray(arr)) return;
+    arr.forEach(function(p){
+      if(!p || p.id == null) return;
+      var id=String(p.id);
+      if(seen[id]) return;
+      seen[id]=true;
+      out.push(p);
+    });
+  }
+  pushFrom(primaryArr);
+  pushFrom(extraArr);
+  return out;
+}
+
 function saveTactState(){try{localStorage.setItem(TACT_KEY+tactSqName,JSON.stringify(tactState));}catch(e){}}
 function loadTactState(){
   try{
@@ -391,6 +483,7 @@ function initTactics(){
     tactInited=true;
   }
   loadTactState();
+  loadTactLabMode();
   const fs = document.getElementById('tact-formation-sel');
   if (fs) fs.value = curFormation;
   try { renderTactics(); } catch (e) { console.error('renderTactics', e); }
@@ -414,7 +507,14 @@ function setFormation(val){
 }
 
 function renderTactics(){
-  const players = areaRosterPlayers(tactSqName);
+  const rosterPlayers = areaRosterPlayers(tactSqName);
+  /* Watchlist sempre unita alla rosa nell'Area Riservata (il toggle "Laboratorio" solo etichette origine) */
+  const wlPlayers = (typeof getWL === 'function' ? getWL() : []);
+  const players = mergePlayersById(rosterPlayers, wlPlayers);
+  const inRoster = {};
+  rosterPlayers.forEach(function(p){ if(p && p.id!=null) inRoster[String(p.id)] = true; });
+  const inWL = {};
+  wlPlayers.forEach(function(p){ if(p && p.id!=null) inWL[String(p.id)] = true; });
   const sq = (typeof SQUADS !== 'undefined' && Array.isArray(SQUADS))
     ? SQUADS.find(s => s.name === tactSqName || String(s.name).toUpperCase() === String(tactSqName || '').toUpperCase())
     : null;
@@ -428,7 +528,7 @@ function renderTactics(){
     var bcEl = document.getElementById('tact-bench-count');
     if (bcEl) bcEl.textContent = '0 di 15';
     document.getElementById('tact-rows').innerHTML =
-      '<div class="tact-row" style="grid-column:1/-1;padding:1.2rem;color:var(--t2);line-height:1.55">Per compilare la formazione servono i dati rosa da <code style="color:var(--vb)">players.js</code>. Senza quel file (o se la squadra non coincide) non puoi assegnare i giocatori alle posizioni.</div>';
+      '<div class="tact-row" style="grid-column:1/-1;padding:1.2rem;color:var(--t2);line-height:1.55">Non ci sono giocatori disponibili per questa tattica. Servono i dati rosa da <code style="color:var(--vb)">players.js</code> (o la squadra non coincide) e/o giocatori in watchlist.</div>';
     return;
   }
 
@@ -460,7 +560,13 @@ function renderTactics(){
     return`<option value="">— Nessuno —</option>`+
       sortByRole(players).map(p=>{
         const used=Object.values(state).some(v=>v&&String(v)===String(p.id)&&String(p.id)!==String(currentPid));
-        return`<option value="${p.id}" ${String(p.id)===String(currentPid)?'selected':''} ${used?'disabled':''}>${p.nome} (${displayRole(p.posizione)} · CA ${p.ca})</option>`;
+        var src='Rosa';
+        var hasR = !!inRoster[String(p.id)];
+        var hasW = !!inWL[String(p.id)];
+        if (hasR && hasW) src='Rosa+WL';
+        else if (!hasR && hasW) src='WL';
+        var labTag = tactLabMode ? (' · ' + src) : '';
+        return`<option value="${p.id}" ${String(p.id)===String(currentPid)?'selected':''} ${used?'disabled':''}>${p.nome} (${displayRole(p.posizione)} · CA ${p.ca})${labTag}</option>`;
       }).join('');
   }
   const posRows=slots.map((pos,idx)=>{
