@@ -164,7 +164,9 @@
   width: 140px; height: 140px; margin-bottom: 1.5rem; position: relative; z-index: 1;
   border-radius: 50%; overflow: hidden; clip-path: circle(50%);
   box-shadow: 0 8px 32px rgba(0,0,0,.35);
-  background: radial-gradient(circle at 30% 30%, rgba(34,211,160,.45), rgba(139,92,246,.45) 55%, rgba(15,23,42,.95) 100%);
+  background:
+    radial-gradient(circle at 30% 30%, rgba(34,211,160,.45), rgba(139,92,246,.45) 55%, rgba(15,23,42,.95) 100%),
+    var(--sf) url("assets/logo-fmto.png") center/cover no-repeat;
   border: 1px solid rgba(148,163,184,.22);
 }
 .hero-logo img {
