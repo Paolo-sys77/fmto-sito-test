@@ -324,6 +324,16 @@ function renderWatchlist() {
       </div>`;
       }).join('')}
     </div>`).join('');
+  contentEl.querySelectorAll('.wl-card-hit').forEach(function(a){
+    a.addEventListener('click', function(){
+      try{
+        var u=new URL(a.getAttribute('href'), location.href);
+        var pid=u.searchParams.get('pid');
+        var p=wl.find(function(x){ return String(x.id)===String(pid); });
+        if(p) sessionStorage.setItem('fmto_card_player', JSON.stringify(p));
+      }catch(e){}
+    });
+  });
 }
 function removeFromWL(pid,e){
   if(e){ e.stopPropagation(); e.preventDefault(); }

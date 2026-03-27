@@ -1523,9 +1523,15 @@ window.addEventListener('popstate',function(){
   }
   if(sqParam && pidParam && fromArea){
     curSqName=sqParam;
+    var storedWl=null;
+    try{ var rawWl=sessionStorage.getItem('fmto_card_player'); if(rawWl)storedWl=JSON.parse(rawWl); }catch(e){}
+    var wlPlayer=storedWl&&String(storedWl.id)===String(pidParam)?storedWl:null;
     (window.SVINCOLATI_READY||Promise.resolve()).then(function(){
       buildSquadGrid(); refreshWLButtons();
-      setTimeout(function(){ openFMCard(pidParam,sqParam,null); },80);
+      setTimeout(function(){
+        openFMCard(pidParam,sqParam,wlPlayer);
+        if(wlPlayer) try{ sessionStorage.removeItem('fmto_card_player'); }catch(e){}
+      },80);
     });
     return;
   }
