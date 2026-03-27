@@ -239,6 +239,7 @@
 <script src="stipendi.js"></script>
 <script src="misters-data.js"></script>
 <script src="config.js"></script>
+<script src="load-svincolati.js"></script>
 <script src="shared.js"></script>
 <script>
 function areaRosterPlayers(squadName) {
@@ -265,6 +266,11 @@ function showDashboard(sq) {
   document.getElementById('dash-manager').textContent=`Mister: ${showManager} · 🔒 Sessione attiva — watchlist privata`;
   tactSqName = sq.name;
   try { renderWatchlist(); } catch (e) { console.error('renderWatchlist', e); }
+  if (typeof window.SVINCOLATI_READY !== 'undefined') {
+    window.SVINCOLATI_READY.then(function () {
+      try { renderWatchlist(); } catch (e) { console.error('renderWatchlist', e); }
+    });
+  }
   try { renderMySquad(sq); } catch (e) { console.error('renderMySquad', e); }
 }
 function logout() {

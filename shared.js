@@ -75,6 +75,34 @@ function fmtStipendio(v){
 function getStipendio(p) {
   if (!p) return null;
   if (typeof STIPENDI_BY_ID !== 'undefined' && STIPENDI_BY_ID[p.id] != null) return STIPENDI_BY_ID[p.id];
+
+  function numStip(obj) {
+    if (!obj || obj.stipendio == null || obj.stipendio === '') return null;
+    var n = Number(obj.stipendio);
+    return isNaN(n) ? null : n;
+  }
+
+  var isSv =
+    (p.squadra && /svincol/i.test(String(p.squadra))) ||
+    (p.squadName && /svincol/i.test(String(p.squadName)));
+  if (isSv) {
+    var sid = String(p.id || '');
+    if (sid) {
+      var src = null;
+      if (typeof PLAYERS_BY_TEAM !== 'undefined' && Array.isArray(PLAYERS_BY_TEAM.SVINCOLATI)) {
+        src = PLAYERS_BY_TEAM.SVINCOLATI.find(function (pl) { return String(pl.id) === sid; });
+      }
+      if (!src && typeof window !== 'undefined' && Array.isArray(window.SVINCOLATI_SCOUTING)) {
+        src = window.SVINCOLATI_SCOUTING.find(function (pl) { return String(pl.id) === sid; });
+      }
+      if (!src && typeof window !== 'undefined' && Array.isArray(window.SVINCOLATI_EXTRA)) {
+        src = window.SVINCOLATI_EXTRA.find(function (pl) { return String(pl.id) === sid; });
+      }
+      var fromSrc = numStip(src);
+      if (fromSrc != null && fromSrc > 0) return fromSrc;
+    }
+  }
+
   if (p.stipendio != null && p.stipendio !== '') {
     var n = Number(p.stipendio);
     return isNaN(n) ? null : n;
