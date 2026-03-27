@@ -702,7 +702,7 @@ function openSquad(sqName){
     const avgCA=Math.round(players.reduce((s,p)=>s+p.ca,0)/players.length);
     const avgPA=Math.round(players.reduce((s,p)=>s+p.pa,0)/players.length);
     const topCA=players.reduce(function(m,p){ return p.ca>m?p.ca:m; },0);
-    const totStip=players.reduce((s,p)=>s+((typeof getStipendio==='function'?getStipendio(p):null)||p.prezzo||0),0);
+    const totStip=players.reduce((s,p)=>s+((typeof getStipendio==='function'?getStipendio(p):null)||0),0);
     if(sq.name!=='SVINCOLATI'){
       document.getElementById('squad-summary').innerHTML=`
       <div class="ss-item"><div class="ss-val">${avgCA}</div><div class="ss-lbl">CA medio</div></div>
@@ -744,7 +744,7 @@ function renderSquadTable(players){
       <td><span class="ov ${getOvrClass(p.ca)}">${p.ca}</span></td>
       <td style="color:var(--t2)">${p.pa}</td>
       <td style="color:var(--t2)">${p.vel}</td>
-      <td class="val-tag">${typeof fmtStipendio==='function'?fmtStipendio((typeof getStipendio==='function'?getStipendio(p):null)||p.prezzo):'—'}</td>
+      <td class="val-tag">${typeof fmtStipendio==='function'?fmtStipendio((typeof getStipendio==='function'?getStipendio(p):null)):'—'}</td>
       <td style="color:var(--t3);font-size:.74rem;white-space:nowrap">${p.posizione||'—'}</td>
       <td><button class="wl-btn ${inWL(p.id)?'inw':''}" data-pid="${p.id}"
         onclick="toggleWLPlayer('${p.id}','${curSqName.replace(/'/g,"\\'")}');event.stopPropagation()">${inWL(p.id)?'★':'☆'}</button></td>
@@ -795,7 +795,7 @@ function renderSquadUnder(sqName){
     const ruolo = displayRole(p.posizione);
     const flag = getFlag(p.naz);
     const safeSq = String(p.squadra || sqName || '').replace(/'/g, "\\'");
-    const rawStip = p.stipendio != null ? p.stipendio : p.prezzo || 0;
+    const rawStip = typeof getStipendio === 'function' ? getStipendio(p) : (p.stipendio != null ? p.stipendio : null);
     const stipendio = typeof fmtStipendio==='function'
       ? fmtStipendio(rawStip)
       : rawStip;
@@ -996,7 +996,7 @@ function openFMCard(pid, sqName, playerFromStorage){
   }
 
   // VALUE STRIP (stipendio da CSV)
-  document.getElementById('fm-stipendio').textContent=typeof fmtStipendio==='function'?(fmtStipendio((typeof getStipendio==='function'?getStipendio(p):null)||p.prezzo)||'—'):'—';
+  document.getElementById('fm-stipendio').textContent=typeof fmtStipendio==='function'?(fmtStipendio((typeof getStipendio==='function'?getStipendio(p):null))||'—'):'—';
   document.getElementById('fm-contratto').textContent='—';
   document.getElementById('fm-presenze').textContent='0';
   document.getElementById('fm-personalita').textContent='—';

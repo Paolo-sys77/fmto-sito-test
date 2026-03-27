@@ -71,7 +71,16 @@ function fmtStipendio(v){
   if(v<1000000)return'€'+(v/1000000).toFixed(1)+'M';
   return fmtPrice(v);
 }
-function getStipendio(p){ return (typeof STIPENDI_BY_ID!=='undefined'&&STIPENDI_BY_ID[p.id])?STIPENDI_BY_ID[p.id]:null; }
+/** Stipendio: tabella stipendi.js per ID, altrimenti campo `stipendio` sul giocatore. Mai `prezzo` (valore di mercato). */
+function getStipendio(p) {
+  if (!p) return null;
+  if (typeof STIPENDI_BY_ID !== 'undefined' && STIPENDI_BY_ID[p.id] != null) return STIPENDI_BY_ID[p.id];
+  if (p.stipendio != null && p.stipendio !== '') {
+    var n = Number(p.stipendio);
+    return isNaN(n) ? null : n;
+  }
+  return null;
+}
 
 // ── WATCHLIST — per-squad, richiede autenticazione
 // Sessione in localStorage: resta dopo chiusura browser; si azzera solo con logout (endSession)
