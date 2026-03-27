@@ -28,6 +28,27 @@ function getDuckDBSingleton() {
   return _duckPromise;
 }
 
+function buildUnderIdSet() {
+  const src = globalThis && globalThis.UNDER_BY_TEAM;
+  if (!src || typeof src !== 'object') return null;
+  const set = new Set();
+  for (const team of Object.keys(src)) {
+    const ids = src[team];
+    if (!Array.isArray(ids)) continue;
+    for (const id of ids) {
+      const s = String(id || '').trim();
+      if (s) set.add(s);
+    }
+  }
+  return set.size ? set : null;
+}
+
+function filterOutUnder(players) {
+  const underSet = buildUnderIdSet();
+  if (!underSet) return players;
+  return (Array.isArray(players) ? players : []).filter((p) => !underSet.has(String(p && p.id || '').trim()));
+}
+
 function toInt(v) {
   if (v == null || v === '') return null;
   if (typeof v === 'bigint') v = Number(v);
@@ -248,7 +269,7 @@ function mapDataRowsToPlayers(dataRows, idx) {
   return players;
 }
 
-let _parquetSession = { url: null, players: null };
+let _parquetSession = { url: null, rawPlayers: null };
 
 /**
  * @param {string} parquetUrl URL del Parquet (stesso origine del sito, es. data/svincolati.parquet)
@@ -256,8 +277,8 @@ let _parquetSession = { url: null, players: null };
  */
 export async function loadSvincolatiPlayersFromParquet(parquetUrl) {
   if (!parquetUrl || typeof parquetUrl !== 'string') return null;
-  if (_parquetSession.url === parquetUrl && _parquetSession.players) {
-    return _parquetSession.players;
+  if (_parquetSession.url === parquetUrl && _parquetSession.rawPlayers) {
+    return filterOutUnder(_parquetSession.rawPlayers);
   }
 
   const res = await fetch(parquetUrl, { cache: 'no-store' });
@@ -298,7 +319,7 @@ export async function loadSvincolatiPlayersFromParquet(parquetUrl) {
   }
 
   const idx = buildIdx(metaHeaderNames, colIds);
-  const players = mapDataRowsToPlayers(dataRows, idx);
-  _parquetSession = { url: parquetUrl, players };
-  return players;
+  const rawPlayers = mapDataRowsToPlayers(dataRows, idx);
+  _parquetSession = { url: parquetUrl, rawPlayers };
+  return filterOutUnder(rawPlayers);
 }
