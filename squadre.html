@@ -18,7 +18,8 @@
 .ss-val{font-family:'Barlow Condensed',sans-serif;font-size:1.3rem;font-weight:800;background:linear-gradient(135deg,var(--vb),var(--g));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1}
 .ss-lbl{font-size:.58rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--t3)}
 .view{display:none}.view.active{display:block;animation:fadeUp .3s ease both}
-body.card-only-from-scouting #view-grid,body.card-only-from-scouting #view-squad{display:none!important}
+body.card-only-from-scouting #view-grid,body.card-only-from-scouting #view-squad,
+body.card-only-from-area #view-grid,body.card-only-from-area #view-squad{display:none!important}
 .player-tbl th.sortable{cursor:pointer;user-select:none}
 .player-tbl th.sortable:hover{color:var(--vb)}
 
@@ -307,7 +308,7 @@ body.card-only-from-scouting #view-grid,body.card-only-from-scouting #view-squad
 </head>
 <body class="gbg">
 <script>
-(function(){var p=new URLSearchParams(location.search);if(p.get('from')==='scouting'&&p.get('sq')&&p.get('pid'))document.body.classList.add('card-only-from-scouting');})();
+(function(){var p=new URLSearchParams(location.search);if(p.get('from')==='scouting'&&p.get('sq')&&p.get('pid'))document.body.classList.add('card-only-from-scouting');if(p.get('from')==='area'&&p.get('sq')&&p.get('pid'))document.body.classList.add('card-only-from-area');})();
 </script>
 <nav>
   <a class="nav-logo" href="home.html">FMTO<span style="background:linear-gradient(135deg,var(--vb),var(--g));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text"> 2.0</span></a>
@@ -1035,6 +1036,10 @@ function _applyAfterCardCloseFromPopstate(){
   if (overlay) overlay.classList.remove('open');
   document.body.style.overflow = '';
   window._fmtoCardPushed = false;
+  if (new URLSearchParams(location.search).get('from') === 'area') {
+    location.href = 'area.html#wl';
+    return;
+  }
   if (new URLSearchParams(location.search).get('from') === 'scouting') {
     location.href = 'scouting-risultati.html';
     return;
@@ -1506,7 +1511,7 @@ window.addEventListener('popstate',function(){
 
 (function init(){
   var params=new URLSearchParams(location.search);
-  var sqParam=params.get('sq'),pidParam=params.get('pid'),fromScouting=params.get('from')==='scouting';
+  var sqParam=params.get('sq'),pidParam=params.get('pid'),fromScouting=params.get('from')==='scouting',fromArea=params.get('from')==='area';
   if(sqParam && pidParam && fromScouting){
     var stored=null;
     try{ var raw=sessionStorage.getItem('fmto_card_player'); if(raw)stored=JSON.parse(raw); }catch(e){}
@@ -1514,6 +1519,14 @@ window.addEventListener('popstate',function(){
     if(stored){ openFMCard(pidParam,sqParam,stored); try{ sessionStorage.removeItem('fmto_card_player'); }catch(e){} }
     else { (window.SVINCOLATI_READY||Promise.resolve()).then(function(){ openFMCard(pidParam,sqParam,null); }); }
     (window.SVINCOLATI_READY||Promise.resolve()).then(function(){ buildSquadGrid(); refreshWLButtons(); });
+    return;
+  }
+  if(sqParam && pidParam && fromArea){
+    curSqName=sqParam;
+    (window.SVINCOLATI_READY||Promise.resolve()).then(function(){
+      buildSquadGrid(); refreshWLButtons();
+      setTimeout(function(){ openFMCard(pidParam,sqParam,null); },80);
+    });
     return;
   }
   (window.SVINCOLATI_READY||Promise.resolve()).then(function(){

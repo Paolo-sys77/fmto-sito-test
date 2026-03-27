@@ -296,7 +296,7 @@ function renderWatchlist() {
   contentEl.innerHTML=ROLE_ORDER.filter(k=>groups[k].length>0).map(k=>`
     <div style="margin-bottom:1.5rem">
       <div class="role-group-title">${ROLE_LABELS[k]} (${groups[k].length})</div>
-      ${groups[k].map(p=>`<div class="wl-card" onclick="location.href='squadre.html?sq=${encodeURIComponent(p.squadName||p.squadra||'SVINCOLATI')}&pid=${p.id}'">
+      ${groups[k].map(p=>`<div class="wl-card" onclick="location.href='squadre.html?sq=${encodeURIComponent(p.squadName||p.squadra||'SVINCOLATI')}&pid=${p.id}&from=area'">
         <div style="flex:1;min-width:0">
           <div style="font-weight:600;font-size:.9rem">${p.nome}</div>
           <div style="font-size:.73rem;color:var(--t2);margin-top:.12rem;display:flex;align-items:center;gap:.4rem;flex-wrap:wrap">
@@ -437,6 +437,11 @@ function initAreaReserved() {
     startSession(sq.id, sq.name);
   }
   showDashboard(sq);
+  if (location.hash === '#wl') {
+    try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+    var wlTab = document.querySelector('.tabs .tab[data-tab="wl"]');
+    if (wlTab) switchTab('wl', wlTab);
+  }
 }
 
 /* ═══ MIA SQUADRA ═══ */
