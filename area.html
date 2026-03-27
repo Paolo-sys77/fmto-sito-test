@@ -19,10 +19,16 @@
 .wl-stat{background:var(--card);border:1px solid var(--border);border-radius:9px;padding:.7rem 1rem;flex:1;min-width:100px;text-align:center}
 .wl-stat-num{font-family:'Barlow Condensed',sans-serif;font-size:1.5rem;font-weight:800;color:var(--vb)}
 .wl-stat-lbl{font-size:.62rem;font-weight:500;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);margin-top:.1rem}
-.wl-card{background:var(--card);border:1px solid var(--border);border-radius:9px;padding:.9rem 1.1rem;display:flex;align-items:center;gap:.9rem;margin-bottom:.55rem;transition:all .18s;cursor:pointer}
+.wl-card{background:var(--card);border:1px solid var(--border);border-radius:9px;padding:.9rem 1.1rem;display:flex;align-items:center;gap:.9rem;margin-bottom:.55rem;transition:all .18s}
 .wl-card:hover{border-color:var(--v)}
-.wl-remove{margin-left:auto;background:none;border:1px solid rgba(239,68,68,.18);color:#f87171;padding:.22rem .55rem;border-radius:5px;cursor:pointer;font-size:.7rem;transition:all .14s;flex-shrink:0}
+.wl-card-hit{flex:1;display:flex;align-items:center;gap:.9rem;min-width:0;text-decoration:none;color:inherit;cursor:pointer;-webkit-tap-highlight-color:rgba(139,92,246,.2);touch-action:manipulation}
+.wl-card-hit:focus-visible{outline:2px solid var(--vb);outline-offset:2px;border-radius:6px}
+.wl-remove{margin-left:auto;background:none;border:1px solid rgba(239,68,68,.18);color:#f87171;padding:.22rem .55rem;border-radius:5px;cursor:pointer;font-size:.7rem;transition:all .14s;flex-shrink:0;touch-action:manipulation;-webkit-tap-highlight-color:rgba(139,92,246,.15)}
 .wl-remove:hover{background:rgba(239,68,68,.1);border-color:#f87171}
+@media (max-width:640px){
+  .wl-card{min-height:48px;padding:.75rem .9rem}
+  .wl-remove{min-width:44px;min-height:44px;padding:.35rem .85rem;display:inline-flex;align-items:center;justify-content:center}
+}
 .wl-empty{text-align:center;padding:2.5rem 1rem;color:var(--t2)}
 .wl-file-hidden{position:absolute;left:-9999px;width:1px;height:1px;opacity:0;overflow:hidden}
 /* Import/export watchlist: ok anche su mobile (download → “File”/Download; import → galleria file / iCloud) */
@@ -296,25 +302,33 @@ function renderWatchlist() {
   contentEl.innerHTML=ROLE_ORDER.filter(k=>groups[k].length>0).map(k=>`
     <div style="margin-bottom:1.5rem">
       <div class="role-group-title">${ROLE_LABELS[k]} (${groups[k].length})</div>
-      ${groups[k].map(p=>`<div class="wl-card" onclick="location.href='squadre.html?sq=${encodeURIComponent(p.squadName||p.squadra||'SVINCOLATI')}&pid=${p.id}&from=area'">
-        <div style="flex:1;min-width:0">
-          <div style="font-weight:600;font-size:.9rem">${p.nome}</div>
-          <div style="font-size:.73rem;color:var(--t2);margin-top:.12rem;display:flex;align-items:center;gap:.4rem;flex-wrap:wrap">
-            <span>${getFlag(p.naz)} ${String(p.naz||'').split(',')[0].trim()||'—'}</span>
-            <span style="color:var(--t4)">·</span><span>${p.squadName||p.squadra||'—'}</span>
-            <span style="color:var(--t4)">·</span><span>${p.eta} anni</span>
-            <span style="color:var(--t4)">·</span>
-            <span class="rb r-white" style="font-size:.58rem">${displayRole(p.posizione)}</span>
-            <span style="color:var(--t4)">·</span><span class="val-tag">${typeof fmtStipendio==='function'?fmtStipendio(getStipendio(p)):'—'}</span>
+      ${groups[k].map(p=>{
+        const wlHref = 'squadre.html?sq=' + encodeURIComponent(p.squadName||p.squadra||'SVINCOLATI') + '&pid=' + encodeURIComponent(p.id) + '&from=area';
+        return `<div class="wl-card">
+        <a class="wl-card-hit" href="${wlHref}">
+          <div style="flex:1;min-width:0">
+            <div style="font-weight:600;font-size:.9rem">${p.nome}</div>
+            <div style="font-size:.73rem;color:var(--t2);margin-top:.12rem;display:flex;align-items:center;gap:.4rem;flex-wrap:wrap">
+              <span>${getFlag(p.naz)} ${String(p.naz||'').split(',')[0].trim()||'—'}</span>
+              <span style="color:var(--t4)">·</span><span>${p.squadName||p.squadra||'—'}</span>
+              <span style="color:var(--t4)">·</span><span>${p.eta} anni</span>
+              <span style="color:var(--t4)">·</span>
+              <span class="rb r-white" style="font-size:.58rem">${displayRole(p.posizione)}</span>
+              <span style="color:var(--t4)">·</span><span class="val-tag">${typeof fmtStipendio==='function'?fmtStipendio(getStipendio(p)):'—'}</span>
+            </div>
           </div>
-        </div>
-        <span class="ov ${getOvrClass(p.ca)}" style="font-size:1.4rem;margin-right:.6rem">${p.ca}</span>
-        <span style="font-family:'Barlow Condensed',sans-serif;font-size:.85rem;color:var(--t2);margin-right:.6rem">→${p.pa}</span>
-        <button class="wl-remove" onclick="removeFromWL('${p.id}',event)">✕</button>
-      </div>`).join('')}
+          <span class="ov ${getOvrClass(p.ca)}" style="font-size:1.4rem;margin-right:.6rem">${p.ca}</span>
+          <span style="font-family:'Barlow Condensed',sans-serif;font-size:.85rem;color:var(--t2);margin-right:.6rem">→${p.pa}</span>
+        </a>
+        <button type="button" class="wl-remove" onclick="removeFromWL('${p.id}',event)">✕</button>
+      </div>`;
+      }).join('')}
     </div>`).join('');
 }
-function removeFromWL(pid,e){if(e)e.stopPropagation();saveWL(getWL().filter(p=>String(p.id)!==String(pid)));renderWatchlist();}
+function removeFromWL(pid,e){
+  if(e){ e.stopPropagation(); e.preventDefault(); }
+  saveWL(getWL().filter(p=>String(p.id)!==String(pid)));renderWatchlist();
+}
 
 function watchlistExportPayload() {
   const s = getSession && getSession();
